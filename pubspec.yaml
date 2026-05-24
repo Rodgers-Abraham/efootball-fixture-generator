@@ -1,0 +1,57 @@
+name: efootball_fixture_generator
+description: "eFootball Fixture Generator - Tournament management with OCR and analytics."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.11.5 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^15.1.2
+
+  # Backend
+  supabase_flutter: ^2.9.0
+
+  # OCR
+  google_mlkit_text_recognition: ^0.13.0
+  image_picker: ^1.1.2
+
+  # Models
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Error handling
+  dartz: ^0.10.1
+
+  # Utilities
+  equatable: ^2.0.7
+  cached_network_image: ^3.4.1
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  build_runner: '>=2.4.14 <3.0.0'
+  freezed: ^2.5.8
+  json_serializable: ^6.9.4
+  riverpod_generator: ^2.6.2
+
+dependency_overrides:
+  analyzer_plugin: '>=0.13.0 <1.0.0'
+
+flutter:
+  uses-material-design: true
