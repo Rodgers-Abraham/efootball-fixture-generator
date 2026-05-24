@@ -49,6 +49,7 @@ dev_dependencies:
   freezed: ^2.5.8
   json_serializable: ^6.9.4
   riverpod_generator: ^2.6.2
+  flutter_launcher_icons: ^0.13.1
 
 dependency_overrides:
   analyzer_plugin: '>=0.13.0 <1.0.0'
