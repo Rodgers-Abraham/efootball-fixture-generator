@@ -1,5 +1,4 @@
 name: Flutter Android CI
-
 on:
   push:
     branches: [ "main" ]
