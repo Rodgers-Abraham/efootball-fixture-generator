@@ -87,6 +87,16 @@ create table match_events (
   created_at timestamptz default now()
 );
 
+-- Friendships table
+create table friendships (
+  id uuid primary key default gen_random_uuid(),
+  user_id_1 uuid references users(id) on delete cascade,
+  user_id_2 uuid references users(id) on delete cascade,
+  status text not null check (status in ('pending', 'accepted')),
+  created_at timestamptz default now(),
+  unique(user_id_1, user_id_2)
+);
+
 -- ─────────────────────────────────────────────────────────────
 -- Row Level Security
 -- ─────────────────────────────────────────────────────────────
@@ -98,6 +108,17 @@ alter table tournament_participants enable row level security;
 alter table squad_items         enable row level security;
 alter table matches             enable row level security;
 alter table match_events        enable row level security;
+alter table friendships         enable row level security;
+
+-- friendships: users can read their own friendships; anyone can read their own pending/accepted status
+create policy "friendships: read own"
+  on friendships for select using (auth.uid() = user_id_1 or auth.uid() = user_id_2);
+create policy "friendships: insert"
+  on friendships for insert with check (auth.uid() = user_id_1);
+create policy "friendships: update"
+  on friendships for update using (auth.uid() = user_id_1 or auth.uid() = user_id_2);
+create policy "friendships: delete"
+  on friendships for delete using (auth.uid() = user_id_1 or auth.uid() = user_id_2);
 
 -- users: anyone logged in can read all profiles (needed for participant search)
 -- only the owner can insert/update their own row
@@ -168,3 +189,43 @@ create policy "events: insert"
       where m.id = match_id
     )
   );
+
+-- ─────────────────────────────────────────────────────────────
+-- Storage setup for Avatars
+-- ─────────────────────────────────────────────────────────────
+-- 🔥 MASTER FIX FOR AVATAR UPLOADS (Run this in Supabase SQL Editor) 🔥
+-- insert into storage.buckets (id, name, public) values ('avatars', 'avatars', true);
+
+-- create policy "avatar_upload" on storage.objects for insert with check (
+--   bucket_id = 'avatars' AND (auth.uid())::text = (storage.foldername(name))[1]
+-- );
+
+-- create policy "avatar_update" on storage.objects for update using (
+--   bucket_id = 'avatars' AND (auth.uid())::text = (storage.foldername(name))[1]
+-- );
+
+-- create policy "avatar_delete" on storage.objects for delete using (
+--   bucket_id = 'avatars' AND (auth.uid())::text = (storage.foldername(name))[1]
+-- );
+
+-- create policy "avatar_public_view" on storage.objects for select using (
+--   bucket_id = 'avatars'
+-- );
+
+-- ─────────────────────────────────────────────────────────────
+-- Account Management
+-- ─────────────────────────────────────────────────────────────
+
+-- Function to handle user deletion from auth.users (trigger)
+create or replace function public.handle_user_delete()
+returns trigger as $$
+begin
+  delete from public.users where id = old.id;
+  return old;
+end;
+$$ language plpgsql security definer;
+
+-- Trigger to delete public user data when auth user is deleted
+-- create trigger on_auth_user_delete
+--   after delete on auth.users
+--   for each row execute procedure public.handle_user_delete();

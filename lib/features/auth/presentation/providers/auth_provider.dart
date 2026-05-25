@@ -1,52 +1,36 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
 import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
 import 'package:efootball_fixture_generator/features/auth/data/datasources/auth_remote_datasource.dart';
 import 'package:efootball_fixture_generator/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/repositories/auth_repository.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
 
-// ── Datasource ─────────────────────────────────────────────────
+// ── Infrastructure ─────────────────────────────────────────────
 final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
   final client = ref.watch(supabaseClientProvider);
   return AuthRemoteDatasourceImpl(client);
 });
 
-// ── Repository ─────────────────────────────────────────────────
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  final datasource = ref.watch(authRemoteDatasourceProvider);
-  return AuthRepositoryImpl(datasource);
+  final ds = ref.watch(authRemoteDatasourceProvider);
+  return AuthRepositoryImpl(ds);
 });
 
 // ── Auth state notifier ────────────────────────────────────────
+final authNotifierProvider =
+    AsyncNotifierProvider<AuthNotifier, UserEntity?>(AuthNotifier.new);
+
 class AuthNotifier extends AsyncNotifier<UserEntity?> {
   @override
   Future<UserEntity?> build() async {
     final repo = ref.watch(authRepositoryProvider);
+    // Listen to stream for real-time updates
+    repo.authStateChanges().listen((user) {
+      state = AsyncData(user);
+    });
     final result = await repo.getCurrentUser();
     return result.fold((_) => null, (user) => user);
-  }
-
-  Future<String?> signIn({
-    required String email,
-    required String password,
-  }) async {
-    state = const AsyncLoading();
-    final repo = ref.read(authRepositoryProvider);
-    final result = await repo.signIn(email: email, password: password);
-    return result.fold(
-      (failure) {
-        state = const AsyncData(null);
-        return failure.displayMessage;
-      },
-      (user) {
-        state = AsyncData(user);
-        return null;
-      },
-    );
   }
 
   Future<String?> signUp({
@@ -64,9 +48,28 @@ class AuthNotifier extends AsyncNotifier<UserEntity?> {
       password: password,
     );
     return result.fold(
-      (failure) {
-        state = const AsyncData(null);
-        return failure.displayMessage;
+      (f) {
+        state = AsyncError(f, StackTrace.current);
+        return f.message;
+      },
+      (user) {
+        state = AsyncData(user);
+        return null;
+      },
+    );
+  }
+
+  Future<String?> signIn({
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncLoading();
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.signIn(email: email, password: password);
+    return result.fold(
+      (f) {
+        state = AsyncError(f, StackTrace.current);
+        return f.message;
       },
       (user) {
         state = AsyncData(user);
@@ -86,17 +89,19 @@ class AuthNotifier extends AsyncNotifier<UserEntity?> {
     String? teamTag,
     String? avatarUrl,
   }) async {
-    final user = state.valueOrNull;
-    if (user == null) return 'Not logged in';
+    final currentUser = state.valueOrNull;
+    if (currentUser == null) return 'Not logged in';
+
     final repo = ref.read(authRepositoryProvider);
     final result = await repo.updateProfile(
-      userId: user.id,
+      userId: currentUser.id,
       username: username,
       teamTag: teamTag,
       avatarUrl: avatarUrl,
     );
+
     return result.fold(
-      (failure) => failure.displayMessage,
+      (f) => f.message,
       (updated) {
         state = AsyncData(updated);
         return null;
@@ -104,80 +109,81 @@ class AuthNotifier extends AsyncNotifier<UserEntity?> {
     );
   }
 
-  Future<String?> uploadAvatar(File imageFile) async {
+  Future<String?> uploadAvatar(File file) async {
     final user = state.valueOrNull;
     if (user == null) return 'Not logged in';
-    
-    final repo = ref.read(authRepositoryProvider);
-    final uploadResult = await repo.uploadAvatar(
-      userId: user.id,
-      imageFile: imageFile,
-    );
 
-    return uploadResult.fold(
-      (failure) => failure.displayMessage,
-      (url) async {
-        return updateProfile(avatarUrl: url);
-      },
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.uploadAvatar(userId: user.id, imageFile: file);
+
+    return result.fold(
+      (f) => f.message,
+      (url) => updateProfile(avatarUrl: url),
     );
+  }
+
+  // ── Account Management ──
+  Future<String?> resetPassword(String email) async {
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.sendPasswordResetEmail(email);
+    return result.fold((f) => f.message, (_) => null);
+  }
+
+  Future<String?> deleteAccount() async {
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.deleteAccount();
+    return result.fold((f) => f.message, (_) {
+      state = const AsyncData(null);
+      return null;
+    });
+  }
+
+  // ── Friendship Management ──
+  Future<String?> sendFriendRequest(String toUserId) async {
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.sendFriendRequest(toUserId);
+    return result.fold((f) => f.message, (_) => null);
+  }
+
+  Future<String?> acceptFriendRequest(String requestId) async {
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.acceptFriendRequest(requestId);
+    if (result.isRight()) {
+      ref.invalidate(friendsProvider);
+      ref.invalidate(pendingRequestsProvider);
+    }
+    return result.fold((f) => f.message, (_) => null);
+  }
+
+  Future<String?> declineFriendRequest(String requestId) async {
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.declineFriendRequest(requestId);
+    if (result.isRight()) {
+      ref.invalidate(pendingRequestsProvider);
+    }
+    return result.fold((f) => f.message, (_) => null);
   }
 }
 
-final authNotifierProvider =
-    AsyncNotifierProvider<AuthNotifier, UserEntity?>(AuthNotifier.new);
-
-/// Convenience stream provider that mirrors Supabase auth state.
-final authStateStreamProvider = StreamProvider<UserEntity?>((ref) {
-  final repo = ref.watch(authRepositoryProvider);
-  return repo.authStateChanges();
-});
-
-/// Quick boolean whether any user is logged in.
+// ── Convenience providers ──────────────────────────────────────
 final isAuthenticatedProvider = Provider<bool>((ref) {
-  final authState = ref.watch(authNotifierProvider);
-  return authState.valueOrNull != null;
+  return ref.watch(authNotifierProvider).valueOrNull != null;
 });
 
-/// The current Supabase auth user (raw).
-final supabaseAuthUserProvider = Provider<User?>((ref) {
-  return Supabase.instance.client.auth.currentUser;
+final friendsProvider = FutureProvider<List<UserEntity>>((ref) async {
+  final repo = ref.watch(authRepositoryProvider);
+  final result = await repo.getFriends();
+  return result.fold((_) => [], (list) => list);
 });
 
-/// Fetches trophy count for a given user.
+final pendingRequestsProvider = FutureProvider<List<({String id, UserEntity fromUser})>>((ref) async {
+  final repo = ref.watch(authRepositoryProvider);
+  final result = await repo.getPendingRequests();
+  return result.fold((_) => [], (list) => list);
+});
+
 final userTrophiesProvider = FutureProvider.family<int, String>((ref, userId) async {
   final client = ref.watch(supabaseClientProvider);
-  
-  // 1. Get all completed tournaments
-  final tournamentsResponse = await client
-      .from('tournaments')
-      .select('id, format')
-      .eq('status', 'completed');
-
-  final completedTournaments = List<Map<String, dynamic>>.from(tournamentsResponse);
-  int trophies = 0;
-
-  for (final t in completedTournaments) {
-    final tid = t['id'] as String;
-    final format = t['format'] as String;
-
-    if (format == 'round_robin') {
-      final standings = await ref.read(standingsProvider(tid).future);
-      if (standings.isNotEmpty && standings.first.userId == userId) {
-        trophies++;
-      }
-    } else {
-      final matches = await ref.read(matchesProvider(tid).future);
-      if (matches.isNotEmpty) {
-        final lastMatch = matches.last;
-        if (lastMatch.status == 'completed') {
-          final winnerId = (lastMatch.homeScore ?? 0) > (lastMatch.awayScore ?? 0)
-              ? lastMatch.homeUserId 
-              : lastMatch.awayUserId;
-          if (winnerId == userId) trophies++;
-        }
-      }
-    }
-  }
-
-  return trophies;
+  final response = await client.from('match_events').select('id, squad_items!inner(user_id)').eq('event_type', 'motm').eq('squad_items.user_id', userId);
+  return (response as List).length;
 });

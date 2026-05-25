@@ -7,6 +7,7 @@ import 'package:efootball_fixture_generator/features/auth/data/models/user_model
 import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
 import 'package:efootball_fixture_generator/features/squad/data/models/squad_item_model.dart';
 import 'package:efootball_fixture_generator/features/squad/presentation/widgets/player_card_chip.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// Fetches a specific user's public info.
 final publicUserProvider = FutureProvider.family<UserModel?, String>((ref, userId) async {
@@ -39,6 +40,8 @@ class PublicProfileScreen extends ConsumerWidget {
     final userAsync = ref.watch(publicUserProvider(userId));
     final trophyAsync = ref.watch(userTrophiesProvider(userId));
     final squadAsync = ref.watch(publicSquadProvider(userId));
+    final currentUser = ref.watch(authNotifierProvider).valueOrNull;
+    final friendsAsync = ref.watch(friendsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -53,6 +56,8 @@ class PublicProfileScreen extends ConsumerWidget {
             return const Center(child: Text('User not found'));
           }
 
+          final isOwnProfile = currentUser?.id == userId;
+
           return ListView(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             children: [
@@ -64,7 +69,7 @@ class PublicProfileScreen extends ConsumerWidget {
                       radius: 60,
                       backgroundColor: AppColors.primary.withValues(alpha: 0.1),
                       backgroundImage: user.avatarUrl != null
-                          ? NetworkImage(user.avatarUrl!)
+                          ? CachedNetworkImageProvider(user.avatarUrl!)
                           : null,
                       child: user.avatarUrl == null
                           ? Text(
@@ -88,28 +93,50 @@ class PublicProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        user.teamTag,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                        ),
+                    Text(
+                      user.teamTag,
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2,
                       ),
                     ),
+                    const SizedBox(height: 24),
+                    
+                    // Social Action Button
+                    if (!isOwnProfile && currentUser != null)
+                      friendsAsync.when(
+                        data: (friends) {
+                          final isFriend = friends.any((f) => f.id == userId);
+                          if (isFriend) {
+                            return const Chip(
+                              label: Text('FRIENDS'),
+                              avatar: Icon(Icons.check, size: 16),
+                            );
+                          }
+                          return ElevatedButton.icon(
+                            icon: const Icon(Icons.person_add),
+                            label: const Text('SEND FRIEND REQUEST'),
+                            onPressed: () async {
+                              final error = await ref.read(authNotifierProvider.notifier).sendFriendRequest(userId);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(error ?? 'Friend request sent!'),
+                                  backgroundColor: error != null ? AppColors.error : AppColors.success,
+                                ));
+                              }
+                            },
+                          );
+                        },
+                        loading: () => const CircularProgressIndicator(),
+                        error: (_, _) => const SizedBox.shrink(),
+                      ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
               // 🏆 Trophy cabinet
               const Text(

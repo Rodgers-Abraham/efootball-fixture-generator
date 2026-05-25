@@ -33,6 +33,17 @@ abstract class AuthRemoteDatasource {
     required String userId,
     required File imageFile,
   });
+
+  // ── Account Management ──
+  Future<void> sendPasswordResetEmail(String email);
+  Future<void> deleteAccount();
+
+  // ── Social / Friendships ──
+  Future<void> sendFriendRequest(String fromUserId, String toUserId);
+  Future<void> acceptFriendRequest(String friendshipId);
+  Future<void> declineFriendRequest(String friendshipId);
+  Future<List<UserModel>> getFriends(String userId);
+  Future<List<Map<String, dynamic>>> getPendingRequests(String userId);
 }
 
 class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
@@ -171,7 +182,7 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     required File imageFile,
   }) async {
     final fileExt = imageFile.path.split('.').last;
-    final fileName = '$userId.${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
     final path = '$userId/$fileName';
 
     await _client.storage.from('avatars').upload(
@@ -182,5 +193,64 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
     final imageUrl = _client.storage.from('avatars').getPublicUrl(path);
     return imageUrl;
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+    await _client.from('users').delete().eq('id', user.id);
+    await signOut();
+  }
+
+  @override
+  Future<void> sendFriendRequest(String fromUserId, String toUserId) async {
+    final ids = [fromUserId, toUserId]..sort();
+    await _client.from('friendships').insert({
+      'user_id_1': ids[0],
+      'user_id_2': ids[1],
+      'status': 'pending',
+    });
+  }
+
+  @override
+  Future<void> acceptFriendRequest(String friendshipId) async {
+    await _client.from('friendships').update({'status': 'accepted'}).eq('id', friendshipId);
+  }
+
+  @override
+  Future<void> declineFriendRequest(String friendshipId) async {
+    await _client.from('friendships').delete().eq('id', friendshipId);
+  }
+
+  @override
+  Future<List<UserModel>> getFriends(String userId) async {
+    final response = await _client.from('friendships')
+        .select('*, user1:users!user_id_1(*), user2:users!user_id_2(*)')
+        .eq('status', 'accepted')
+        .or('user_id_1.eq.$userId,user_id_2.eq.$userId');
+    
+    final List<UserModel> friends = [];
+    for (var row in (response as List)) {
+      final u1 = UserModel.fromJson(row['user1']);
+      final u2 = UserModel.fromJson(row['user2']);
+      friends.add(u1.id == userId ? u2 : u1);
+    }
+    return friends;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getPendingRequests(String userId) async {
+    final response = await _client.from('friendships')
+        .select('id, fromUser:users!user_id_1(*)')
+        .eq('status', 'pending')
+        .eq('user_id_2', userId);
+    
+    return List<Map<String, dynamic>>.from(response);
   }
 }

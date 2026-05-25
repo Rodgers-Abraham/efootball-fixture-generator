@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:efootball_fixture_generator/core/errors/failures.dart';
 import 'package:efootball_fixture_generator/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:efootball_fixture_generator/features/auth/data/models/user_model.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/repositories/auth_repository.dart';
 
@@ -99,6 +100,87 @@ class AuthRepositoryImpl implements AuthRepository {
         imageFile: imageFile,
       );
       return Right(url);
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email) async {
+    try {
+      await _datasource.sendPasswordResetEmail(email);
+      return const Right(unit);
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> deleteAccount() async {
+    try {
+      await _datasource.deleteAccount();
+      return const Right(unit);
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendFriendRequest(String toUserId) async {
+    try {
+      final user = await _datasource.getCurrentUser();
+      if (user == null) return Left(const Failure.auth(message: 'Not logged in'));
+      await _datasource.sendFriendRequest(user.id, toUserId);
+      return const Right(unit);
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> acceptFriendRequest(String friendshipId) async {
+    try {
+      await _datasource.acceptFriendRequest(friendshipId);
+      return const Right(unit);
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> declineFriendRequest(String friendshipId) async {
+    try {
+      await _datasource.declineFriendRequest(friendshipId);
+      return const Right(unit);
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<UserEntity>>> getFriends() async {
+    try {
+      final user = await _datasource.getCurrentUser();
+      if (user == null) return Left(const Failure.auth(message: 'Not logged in'));
+      final models = await _datasource.getFriends(user.id);
+      return Right(models.map((m) => m.toEntity()).toList());
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<({String id, UserEntity fromUser})>>> getPendingRequests() async {
+    try {
+      final user = await _datasource.getCurrentUser();
+      if (user == null) return Left(const Failure.auth(message: 'Not logged in'));
+      final list = await _datasource.getPendingRequests(user.id);
+      final results = list.map((item) {
+        final id = item['id'] as String;
+        final fromUserData = (item['fromUser'] as Map<String, dynamic>);
+        return (id: id, fromUser: UserModel.fromJson(fromUserData).toEntity());
+      }).toList();
+      return Right(results);
     } on Exception catch (e) {
       return Left(Failure.auth(message: e.toString()));
     }

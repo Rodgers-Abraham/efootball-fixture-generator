@@ -33,4 +33,15 @@ abstract class AuthRepository {
     required String userId,
     required File imageFile,
   });
+
+  // ── Account Management ──
+  Future<Either<Failure, Unit>> sendPasswordResetEmail(String email);
+  Future<Either<Failure, Unit>> deleteAccount();
+
+  // ── Social / Friendships ──
+  Future<Either<Failure, Unit>> sendFriendRequest(String toUserId);
+  Future<Either<Failure, Unit>> acceptFriendRequest(String friendshipId);
+  Future<Either<Failure, Unit>> declineFriendRequest(String friendshipId);
+  Future<Either<Failure, List<UserEntity>>> getFriends();
+  Future<Either<Failure, List<({String id, UserEntity fromUser})>>> getPendingRequests();
 }

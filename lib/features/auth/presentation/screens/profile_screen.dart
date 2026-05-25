@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
+import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -13,470 +14,366 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  bool _isEditing = false;
-  bool _saving = false;
-
-  late TextEditingController _usernameCtrl;
-  late TextEditingController _teamTagCtrl;
-  final _formKey = GlobalKey<FormState>();
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    final user = ref.read(authNotifierProvider).valueOrNull;
-    _usernameCtrl = TextEditingController(text: user?.username ?? '');
-    _teamTagCtrl = TextEditingController(text: user?.teamTag ?? '');
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
   void dispose() {
-    _usernameCtrl.dispose();
-    _teamTagCtrl.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
-  void _startEditing(UserEntity user) {
-    _usernameCtrl.text = user.username;
-    _teamTagCtrl.text = user.teamTag;
-    setState(() => _isEditing = true);
-  }
-
-  Future<void> _pickAndUploadAvatar() async {
+  Future<void> _pickAvatar() async {
     final picker = ImagePicker();
-    final XFile? image = await picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 512,
-      maxHeight: 512,
-      imageQuality: 75,
-    );
-
+    final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
     if (image != null) {
-      setState(() => _saving = true);
       final error = await ref.read(authNotifierProvider.notifier).uploadAvatar(File(image.path));
-      
-      if (!mounted) return;
-      setState(() => _saving = false);
-
-      if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: AppColors.error),
-        );
+      if (error != null && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error), backgroundColor: AppColors.error));
       }
-    }
-  }
-
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _saving = true);
-
-    final error = await ref.read(authNotifierProvider.notifier).updateProfile(
-          username: _usernameCtrl.text.trim(),
-          teamTag: _teamTagCtrl.text.trim().toUpperCase(),
-        );
-
-    if (!mounted) return;
-    setState(() {
-      _saving = false;
-      if (error == null) _isEditing = false;
-    });
-
-    if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: AppColors.error,
-        ),
-      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authAsync = ref.watch(authNotifierProvider);
+    final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('PROFILE'),
-        actions: [
-          authAsync.when(
-            data: (user) => user == null
-                ? const SizedBox.shrink()
-                : _isEditing
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TextButton(
-                            onPressed: _saving
-                                ? null
-                                : () => setState(() => _isEditing = false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: _saving ? null : _save,
-                            child: _saving
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2),
-                                  )
-                                : const Text('Save',
-                                    style: TextStyle(color: AppColors.primary)),
-                          ),
-                        ],
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        tooltip: 'Edit Profile',
-                        onPressed: () => _startEditing(user),
-                      ),
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
+      body: authState.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (user) {
+          if (user == null) return const Center(child: Text('Please log in'));
+
+          return NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) => [
+              SliverAppBar(
+                expandedHeight: 240,
+                floating: false,
+                pinned: true,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildProfileHeader(user),
+                ),
+              ),
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _SliverTabDelegate(
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: AppColors.primary,
+                    labelColor: AppColors.primary,
+                    unselectedLabelColor: AppColors.textSecondary,
+                    tabs: const [
+                      Tab(text: 'OVERVIEW'),
+                      Tab(text: 'SOCIAL'),
+                      Tab(text: 'SETTINGS'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildOverviewTab(user),
+                const _SocialTab(),
+                const _SettingsTab(),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProfileHeader(UserEntity user) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.surfaceVariant, AppColors.background],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const SizedBox(height: 40),
+          GestureDetector(
+            onTap: _pickAvatar,
+            child: Stack(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: AppColors.surface,
+                  backgroundImage: user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
+                  child: user.avatarUrl == null ? const Icon(Icons.person, size: 50, color: AppColors.textDisabled) : null,
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                    child: const Icon(Icons.camera_alt, size: 16, color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
           ),
+          const SizedBox(height: 16),
+          Text(user.username, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w900)),
+          Text(user.teamTag, style: const TextStyle(color: AppColors.primary, fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 2)),
         ],
       ),
-      body: authAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text('Error: $e',
-              style: const TextStyle(color: AppColors.textSecondary)),
+    );
+  }
+
+  Widget _buildOverviewTab(UserEntity user) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        _buildInfoTile('Email', user.email ?? 'Not set', Icons.email_outlined),
+        _buildInfoTile('Member Since', user.createdAt != null ? user.createdAt!.toLocal().toString().split(' ')[0] : 'N/A', Icons.calendar_today_outlined),
+        const SizedBox(height: 32),
+        const Text('TROPHY CABINET', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.5)),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.border)),
+          child: const Center(child: Text('No trophies yet.', style: TextStyle(color: AppColors.textDisabled))),
         ),
-        data: (user) {
-          if (user == null) return const SizedBox.shrink();
-          return _isEditing
-              ? _EditBody(
-                  formKey: _formKey,
-                  usernameCtrl: _usernameCtrl,
-                  teamTagCtrl: _teamTagCtrl,
-                  saving: _saving,
-                )
-              : _ViewBody(
-                  user: user,
-                  onSignOut: () =>
-                      ref.read(authNotifierProvider.notifier).signOut(),
-                  onAvatarTap: _pickAndUploadAvatar,
-                );
-        },
+      ],
+    );
+  }
+
+  Widget _buildInfoTile(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textDisabled, size: 20),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(color: AppColors.textSecondary, fontSize: 11, fontWeight: FontWeight.w600)),
+              Text(value, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-// ── View mode ──────────────────────────────────────────────────
-class _ViewBody extends ConsumerWidget {
-  final UserEntity user;
-  final VoidCallback onSignOut;
-  final VoidCallback onAvatarTap;
-
-  const _ViewBody({
-    required this.user, 
-    required this.onSignOut,
-    required this.onAvatarTap,
-  });
+class _SocialTab extends ConsumerWidget {
+  const _SocialTab();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final trophyAsync = ref.watch(userTrophiesProvider(user.id));
+    final friendsAsync = ref.watch(friendsProvider);
+    final requestsAsync = ref.watch(pendingRequestsProvider);
 
     return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.all(20),
       children: [
-        // Avatar
-        Center(
-          child: Stack(
-            children: [
-              GestureDetector(
-                onTap: onAvatarTap,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                  backgroundImage: user.avatarUrl != null
-                      ? NetworkImage(user.avatarUrl!)
-                      : null,
-                  child: user.avatarUrl == null
-                      ? Text(
-                          user.teamTag,
-                          style: const TextStyle(
-                            color: AppColors.primary,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
-                          ),
-                        )
-                      : null,
-                ),
-              ),
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: GestureDetector(
-                  onTap: onAvatarTap,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.background, width: 3),
-                    ),
-                    child: const Icon(Icons.camera_alt,
-                        color: Colors.black, size: 16),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        Center(
-          child: Text(
-            user.username,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 26,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        Center(
-          child: Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.3)),
-            ),
-            child: Text(
-              user.teamTag,
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-
-        // 🏆 Trophy Cabinet
-        const Text(
-          'TROPHY CABINET',
-          style: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 1.5,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.border),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.surface,
-                AppColors.primary.withValues(alpha: 0.05),
+        requestsAsync.when(
+          data: (requests) {
+            if (requests.isEmpty) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('PENDING REQUESTS', style: TextStyle(color: AppColors.accentVolt, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.5)),
+                const SizedBox(height: 12),
+                ...requests.map((r) => _RequestTile(requestId: r.id, fromUser: r.fromUser)),
+                const SizedBox(height: 24),
               ],
-            ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.trophyGold.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.emoji_events, color: AppColors.trophyGold, size: 32),
-              ),
-              const SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  trophyAsync.when(
-                    data: (count) => Text(
-                      '$count',
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    loading: () => const SizedBox(
-                      width: 20, height: 20, 
-                      child: CircularProgressIndicator(strokeWidth: 2)
-                    ),
-                    error: (_, _) => const Text('0'),
-                  ),
-                  const Text(
-                    'Tournament Victories',
-                    style: TextStyle(
-                      color: AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
+          loading: () => const SizedBox.shrink(),
+          error: (e, s) => const SizedBox.shrink(),
         ),
 
-        const SizedBox(height: 32),
-
-        // Details card
-        _InfoCard(children: [
-          _InfoRow(icon: Icons.person_outline, label: 'Username',
-              value: user.username),
-          const Divider(height: 1, indent: 52),
-          _InfoRow(icon: Icons.tag, label: 'Team Tag', value: user.teamTag),
-          if (user.email != null) ...[
-            const Divider(height: 1, indent: 52),
-            _InfoRow(icon: Icons.email_outlined, label: 'Email',
-                value: user.email!),
-          ],
-        ]),
-        const SizedBox(height: 32),
-
-        // Sign out
-        OutlinedButton.icon(
-          onPressed: onSignOut,
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.error,
-            side: const BorderSide(color: AppColors.error, width: 1.5),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-          ),
-          icon: const Icon(Icons.logout),
-          label: const Text('SIGN OUT'),
+        const Text('FRIENDS', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.5)),
+        const SizedBox(height: 12),
+        friendsAsync.when(
+          data: (friends) {
+            if (friends.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('No friends yet.', style: TextStyle(color: AppColors.textDisabled))));
+            return Column(children: friends.map((f) => _FriendTile(user: f)).toList());
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Text('Error: $e'),
         ),
-        const SizedBox(height: 24),
       ],
     );
   }
 }
 
-class _InfoCard extends StatelessWidget {
-  final List<Widget> children;
-  const _InfoCard({required this.children});
+class _RequestTile extends ConsumerWidget {
+  final String requestId;
+  final UserEntity fromUser;
+  const _RequestTile({required this.requestId, required this.fromUser});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.accentVolt.withValues(alpha: 0.3))),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppColors.surfaceVariant,
+            backgroundImage: fromUser.avatarUrl != null ? CachedNetworkImageProvider(fromUser.avatarUrl!) : null,
+            child: fromUser.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(child: Text(fromUser.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700))),
+          IconButton(icon: const Icon(Icons.check, color: AppColors.success), onPressed: () => ref.read(authNotifierProvider.notifier).acceptFriendRequest(requestId)),
+          IconButton(icon: const Icon(Icons.close, color: AppColors.error), onPressed: () => ref.read(authNotifierProvider.notifier).declineFriendRequest(requestId)),
+        ],
       ),
-      child: Column(children: children),
     );
   }
 }
 
-class _InfoRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  const _InfoRow(
-      {required this.icon, required this.label, required this.value});
+class _FriendTile extends StatelessWidget {
+  final UserEntity user;
+  const _FriendTile({required this.user});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary, size: 22),
-      title: Text(label,
-          style: const TextStyle(
-              color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
-      subtitle: Text(value,
-          style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 16,
-              fontWeight: FontWeight.w700)),
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(
+        backgroundColor: AppColors.surfaceVariant,
+        backgroundImage: user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
+        child: user.avatarUrl == null ? const Icon(Icons.person, size: 20) : null,
+      ),
+      title: Text(user.username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+      subtitle: Text(user.teamTag, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+      trailing: const Icon(Icons.chevron_right, color: AppColors.textDisabled),
+      onTap: () {},
     );
   }
 }
 
-// ── Edit mode ──────────────────────────────────────────────────
-class _EditBody extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
-  final TextEditingController usernameCtrl;
-  final TextEditingController teamTagCtrl;
-  final bool saving;
-
-  const _EditBody({
-    required this.formKey,
-    required this.usernameCtrl,
-    required this.teamTagCtrl,
-    required this.saving,
-  });
+class _SettingsTab extends ConsumerWidget {
+  const _SettingsTab();
 
   @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: formKey,
-      child: ListView(
-        padding: const EdgeInsets.all(24),
-        children: [
-          const Text(
-            'EDIT ACCOUNT DETAILS',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.5,
-            ),
-          ),
-          const SizedBox(height: 24),
-          TextFormField(
-            controller: usernameCtrl,
-            enabled: !saving,
-            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
-            decoration: const InputDecoration(
-              labelText: 'Username',
-              prefixIcon: Icon(Icons.person_outline),
-            ),
-            validator: (v) =>
-                v == null || v.trim().isEmpty ? 'Username is required' : null,
-          ),
-          const SizedBox(height: 20),
-          TextFormField(
-            controller: teamTagCtrl,
-            enabled: !saving,
-            maxLength: 3,
-            textCapitalization: TextCapitalization.characters,
-            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w900, letterSpacing: 2),
-            decoration: const InputDecoration(
-              labelText: 'Team Tag (3 letters)',
-              prefixIcon: Icon(Icons.tag),
-            ),
-            onChanged: (v) {
-              final upper = v.toUpperCase();
-              if (upper != v) {
-                teamTagCtrl.value = teamTagCtrl.value.copyWith(
-                  text: upper,
-                  selection:
-                      TextSelection.collapsed(offset: upper.length),
-                );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authNotifierProvider).valueOrNull;
+
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        const Text('SECURITY', style: TextStyle(color: AppColors.textSecondary, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.5)),
+        const SizedBox(height: 12),
+        _SettingsTile(
+          icon: Icons.lock_reset,
+          title: 'Reset Password',
+          subtitle: 'Receive a password reset link via email',
+          onTap: () async {
+            if (user?.email != null) {
+              final error = await ref.read(authNotifierProvider.notifier).resetPassword(user!.email!);
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(error ?? 'Reset email sent! Check your inbox.'),
+                  backgroundColor: error != null ? AppColors.error : AppColors.success,
+                ));
               }
+            }
+          },
+        ),
+        const SizedBox(height: 32),
+        const Text('DANGER ZONE', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w900, fontSize: 12, letterSpacing: 1.5)),
+        const SizedBox(height: 12),
+        _SettingsTile(
+          icon: Icons.delete_forever,
+          title: 'Delete Account',
+          subtitle: 'Permanently remove all your data',
+          color: AppColors.error,
+          onTap: () => _confirmDelete(context, ref),
+        ),
+        const SizedBox(height: 40),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.white10, foregroundColor: Colors.white),
+          onPressed: () => ref.read(authNotifierProvider.notifier).signOut(),
+          child: const Text('LOG OUT'),
+        ),
+      ],
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Delete Account?'),
+        content: const Text('This action is irreversible. All your match history and squad data will be lost.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('CANCEL')),
+          TextButton(
+            onPressed: () {
+              ref.read(authNotifierProvider.notifier).deleteAccount();
+              Navigator.pop(ctx);
             },
-            validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Team tag is required';
-              if (v.trim().length != 3) return 'Must be exactly 3 characters';
-              return null;
-            },
+            child: const Text('DELETE', style: TextStyle(color: AppColors.error)),
           ),
         ],
       ),
     );
   }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  final Color? color;
+
+  const _SettingsTile({required this.icon, required this.title, required this.subtitle, required this.onTap, this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+      child: ListTile(
+        leading: Icon(icon, color: color ?? AppColors.primary),
+        title: Text(title, style: TextStyle(color: color ?? Colors.white, fontWeight: FontWeight.w700)),
+        subtitle: Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _SliverTabDelegate extends SliverPersistentHeaderDelegate {
+  final TabBar tabBar;
+  _SliverTabDelegate(this.tabBar);
+
+  @override
+  double get minExtent => tabBar.preferredSize.height;
+  @override
+  double get maxExtent => tabBar.preferredSize.height;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(color: AppColors.background, child: tabBar);
+  }
+
+  @override
+  bool shouldRebuild(_SliverTabDelegate oldDelegate) => false;
 }
