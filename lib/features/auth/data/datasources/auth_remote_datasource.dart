@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
 import 'package:efootball_fixture_generator/features/auth/data/models/user_model.dart';
@@ -26,6 +27,11 @@ abstract class AuthRemoteDatasource {
     String? username,
     String? teamTag,
     String? avatarUrl,
+  });
+
+  Future<String> uploadAvatar({
+    required String userId,
+    required File imageFile,
   });
 }
 
@@ -157,5 +163,24 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
         .single();
 
     return UserModel.fromJson(row);
+  }
+
+  @override
+  Future<String> uploadAvatar({
+    required String userId,
+    required File imageFile,
+  }) async {
+    final fileExt = imageFile.path.split('.').last;
+    final fileName = '$userId.${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+    final path = '$userId/$fileName';
+
+    await _client.storage.from('avatars').upload(
+          path,
+          imageFile,
+          fileOptions: const FileOptions(upsert: true),
+        );
+
+    final imageUrl = _client.storage.from('avatars').getPublicUrl(path);
+    return imageUrl;
   }
 }

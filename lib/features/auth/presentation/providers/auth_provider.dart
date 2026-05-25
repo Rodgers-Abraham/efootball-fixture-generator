@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:efootball_fixture_generator/core/errors/failures.dart';
@@ -6,6 +7,7 @@ import 'package:efootball_fixture_generator/features/auth/data/datasources/auth_
 import 'package:efootball_fixture_generator/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/repositories/auth_repository.dart';
+import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
 
 // ── Datasource ─────────────────────────────────────────────────
 final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
@@ -101,6 +103,24 @@ class AuthNotifier extends AsyncNotifier<UserEntity?> {
       },
     );
   }
+
+  Future<String?> uploadAvatar(File imageFile) async {
+    final user = state.valueOrNull;
+    if (user == null) return 'Not logged in';
+    
+    final repo = ref.read(authRepositoryProvider);
+    final uploadResult = await repo.uploadAvatar(
+      userId: user.id,
+      imageFile: imageFile,
+    );
+
+    return uploadResult.fold(
+      (failure) => failure.displayMessage,
+      (url) async {
+        return updateProfile(avatarUrl: url);
+      },
+    );
+  }
 }
 
 final authNotifierProvider =
@@ -121,4 +141,43 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 /// The current Supabase auth user (raw).
 final supabaseAuthUserProvider = Provider<User?>((ref) {
   return Supabase.instance.client.auth.currentUser;
+});
+
+/// Fetches trophy count for a given user.
+final userTrophiesProvider = FutureProvider.family<int, String>((ref, userId) async {
+  final client = ref.watch(supabaseClientProvider);
+  
+  // 1. Get all completed tournaments
+  final tournamentsResponse = await client
+      .from('tournaments')
+      .select('id, format')
+      .eq('status', 'completed');
+
+  final completedTournaments = List<Map<String, dynamic>>.from(tournamentsResponse);
+  int trophies = 0;
+
+  for (final t in completedTournaments) {
+    final tid = t['id'] as String;
+    final format = t['format'] as String;
+
+    if (format == 'round_robin') {
+      final standings = await ref.read(standingsProvider(tid).future);
+      if (standings.isNotEmpty && standings.first.userId == userId) {
+        trophies++;
+      }
+    } else {
+      final matches = await ref.read(matchesProvider(tid).future);
+      if (matches.isNotEmpty) {
+        final lastMatch = matches.last;
+        if (lastMatch.status == 'completed') {
+          final winnerId = (lastMatch.homeScore ?? 0) > (lastMatch.awayScore ?? 0)
+              ? lastMatch.homeUserId 
+              : lastMatch.awayUserId;
+          if (winnerId == userId) trophies++;
+        }
+      }
+    }
+  }
+
+  return trophies;
 });

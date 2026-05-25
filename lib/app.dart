@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:efootball_fixture_generator/core/theme/app_theme.dart';
+import 'package:efootball_fixture_generator/features/onboarding/presentation/screens/onboarding_screen.dart';
 import 'package:efootball_fixture_generator/features/analytics/presentation/screens/analytics_screen.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/screens/login_screen.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/screens/profile_screen.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/screens/register_screen.dart';
+import 'package:efootball_fixture_generator/features/auth/presentation/screens/public_profile_screen.dart';
 import 'package:efootball_fixture_generator/features/ocr_scanner/presentation/screens/ocr_scanner_screen.dart';
 import 'package:efootball_fixture_generator/features/quick_tap/presentation/screens/quick_tap_dashboard_screen.dart';
 import 'package:efootball_fixture_generator/features/squad/presentation/screens/squad_builder_screen.dart';
@@ -27,6 +30,7 @@ final _profileNavKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(Ref ref) {
     ref.listen(authNotifierProvider, (_, __) => notifyListeners());
+    ref.listen(onboardingCompletedProvider, (_, __) => notifyListeners());
   }
 }
 
@@ -44,7 +48,17 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/home/tournaments',
     refreshListenable: notifier,
-    redirect: (context, state) {
+    redirect: (context, state) async {
+      // Check onboarding status directly in redirect to keep router stable
+      final prefs = await SharedPreferences.getInstance();
+      final isFirstLaunch = !(prefs.getBool('onboarding_completed') ?? false);
+      final onboardingDone = ref.read(onboardingCompletedProvider);
+
+      if (isFirstLaunch && !onboardingDone) {
+        if (state.matchedLocation == '/onboarding') return null;
+        return '/onboarding';
+      }
+
       final authState = ref.read(authNotifierProvider);
       if (authState.isLoading) return null;
 
@@ -52,12 +66,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
 
-      if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) return '/home/tournaments';
+      if (state.matchedLocation == '/home') return '/home/tournaments';
+      
       return null;
     },
     routes: [
-      // ── Auth ────────────────────────────────────────────────
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingScreen(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
@@ -66,8 +84,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-
-      // ── Home shell (bottom nav) ──────────────────────────────
+      GoRoute(
+        path: '/profile/:id',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => PublicProfileScreen(
+          userId: state.pathParameters['id']!,
+        ),
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
@@ -110,15 +133,11 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-
-      // ── Tournament create ────────────────────────────────────
       GoRoute(
         path: '/tournament/create',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const CreateTournamentScreen(),
       ),
-
-      // ── Tournament detail / fixtures ─────────────────────────
       GoRoute(
         path: '/tournament/:id',
         parentNavigatorKey: _rootNavigatorKey,
@@ -146,8 +165,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-
-      // ── Analytics per tournament ─────────────────────────────
       GoRoute(
         path: '/analytics/:id',
         parentNavigatorKey: _rootNavigatorKey,
@@ -158,7 +175,6 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// ── App root ───────────────────────────────────────────────────
 class App extends ConsumerWidget {
   const App({super.key});
 

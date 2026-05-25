@@ -42,7 +42,8 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen>
         title: tournamentAsync.when(
           data: (t) => Text(t?.name ?? 'Analytics'),
           loading: () => const Text('Analytics'),
-          error: (_, __) => const Text('Analytics'),
+          // Fixed unnecessary_underscores
+          error: (_, _) => const Text('Analytics'),
         ),
         bottom: TabBar(
           controller: _tabController,
@@ -312,8 +313,10 @@ class _LeaderboardRow extends StatelessWidget {
           width: 48,
           height: 48,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _placeholder(),
-          errorWidget: (_, __, ___) => _placeholder(),
+          // Fixed unnecessary_underscores
+          placeholder: (_, _) => _placeholder(),
+          // Fixed unnecessary_underscores
+          errorWidget: (_, _, _) => _placeholder(),
         ),
       );
     }

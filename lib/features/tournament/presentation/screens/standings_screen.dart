@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
 import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
 
@@ -19,7 +20,8 @@ class StandingsScreen extends ConsumerWidget {
         title: tournamentAsync.when(
           data: (t) => Text('${t?.name ?? 'Tournament'} Standings'),
           loading: () => const Text('Standings'),
-          error: (_, __) => const Text('Standings'),
+          // Fixed unnecessary_underscores
+          error: (_, _) => const Text('Standings'),
         ),
         actions: [
           IconButton(
@@ -69,8 +71,8 @@ class StandingsScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       color: AppColors.surface,
-      child: Row(
-        children: const [
+      child: const Row(
+        children: [
           SizedBox(width: 28, child: Text('#', style: _headerStyle)),
           SizedBox(width: 8),
           Expanded(child: Text('TEAM', style: _headerStyle)),
@@ -127,80 +129,83 @@ class _StandingsRow extends StatelessWidget {
                 ? const Color(0xFFCD7F32)
                 : AppColors.textSecondary;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 4),
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-      decoration: BoxDecoration(
-        color: isTop3
-            ? AppColors.primary.withValues(alpha: rank == 1 ? 0.12 : 0.06)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        border: rank == 1
-            ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
-            : null,
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text(
-              '$rank',
-              style: TextStyle(
-                color: rankColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
+    return GestureDetector(
+      onTap: () => context.push('/profile/${entry.userId}'),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+        decoration: BoxDecoration(
+          color: isTop3
+              ? AppColors.primary.withValues(alpha: rank == 1 ? 0.12 : 0.06)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: rank == 1
+              ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
+              : null,
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 28,
+              child: Text(
+                '$rank',
+                style: TextStyle(
+                  color: rankColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
             ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  entry.username,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    entry.username,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                Text(
-                  entry.teamTag,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 11,
-                    letterSpacing: 1.0,
+                  Text(
+                    entry.teamTag,
+                    style: const TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 11,
+                      letterSpacing: 1.0,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          _StatCell('${entry.played}', 28),
-          _StatCell('${entry.wins}', 28, color: AppColors.success),
-          _StatCell('${entry.draws}', 28, color: AppColors.warning),
-          _StatCell('${entry.losses}', 28, color: AppColors.error),
-          _StatCell('${entry.goalsFor}', 32),
-          _StatCell('${entry.goalsAgainst}', 32),
-          _StatCell(
-            entry.goalDifference >= 0
-                ? '+${entry.goalDifference}'
-                : '${entry.goalDifference}',
-            32,
-            color: entry.goalDifference > 0
-                ? AppColors.success
-                : entry.goalDifference < 0
-                    ? AppColors.error
-                    : AppColors.textSecondary,
-          ),
-          _StatCell(
-            '${entry.points}',
-            40,
-            color: AppColors.accentNeon,
-            bold: true,
-          ),
-        ],
+            _StatCell('${entry.played}', 28),
+            _StatCell('${entry.wins}', 28, color: AppColors.success),
+            _StatCell('${entry.draws}', 28, color: AppColors.warning),
+            _StatCell('${entry.losses}', 28, color: AppColors.error),
+            _StatCell('${entry.goalsFor}', 32),
+            _StatCell('${entry.goalsAgainst}', 32),
+            _StatCell(
+              entry.goalDifference >= 0
+                  ? '+${entry.goalDifference}'
+                  : '${entry.goalDifference}',
+              32,
+              color: entry.goalDifference > 0
+                  ? AppColors.success
+                  : entry.goalDifference < 0
+                      ? AppColors.error
+                      : AppColors.textSecondary,
+            ),
+            _StatCell(
+              '${entry.points}',
+              40,
+              color: AppColors.accentNeon,
+              bold: true,
+            ),
+          ],
+        ),
       ),
     );
   }

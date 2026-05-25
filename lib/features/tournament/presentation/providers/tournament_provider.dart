@@ -48,7 +48,6 @@ class TournamentListNotifier
     if (user == null) return null;
 
     final repo = ref.read(tournamentRepositoryProvider);
-    final generateUseCase = ref.read(generateFixturesUseCaseProvider);
 
     final result = await repo.createTournament(
       name: name,
@@ -58,21 +57,9 @@ class TournamentListNotifier
     );
 
     return result.fold((_) => null, (tournament) async {
-      // Generate and save fixtures
-      final rounds = generateUseCase(
-        tournamentId: tournament.id,
-        format: format,
-        participantIds: participantIds,
-      );
-      final allMatches = rounds.expand((r) => r).toList();
-      await repo.saveMatches(allMatches);
-
-      // Update status to active
-      await repo.updateTournamentStatus(
-        id: tournament.id,
-        status: 'active',
-      );
-
+      // NOTE: Fixtures are NO LONGER generated here.
+      // They will be generated when the creator taps 'START'.
+      
       ref.invalidateSelf();
       return tournament;
     });
@@ -97,6 +84,32 @@ class TournamentListNotifier
         return (tournament: t, error: null);
       },
     );
+  }
+
+  Future<bool> startTournament(String tournamentId) async {
+    final repo = ref.read(tournamentRepositoryProvider);
+    final generateUseCase = ref.read(generateFixturesUseCaseProvider);
+    
+    // 1. Fetch latest tournament data
+    final tournamentResult = await repo.getTournament(tournamentId);
+    return tournamentResult.fold((_) => false, (tournament) async {
+      if (tournament.status != 'pending') return false;
+
+      // 2. Generate fixtures based on current participants
+      final rounds = generateUseCase(
+        tournamentId: tournament.id,
+        format: tournament.format,
+        participantIds: tournament.participantIds,
+      );
+      final allMatches = rounds.expand((r) => r).toList();
+      
+      // 3. Save matches and update status
+      await repo.saveMatches(allMatches);
+      await repo.updateTournamentStatus(id: tournamentId, status: 'active');
+      
+      ref.invalidateSelf();
+      return true;
+    });
   }
 }
 
@@ -193,8 +206,9 @@ final standingsProvider =
       final away = table[m.awayUserId];
       if (home == null || away == null) continue;
 
-      final int hg = (m.homeScore ?? 0) as int;
-      final int ag = (m.awayScore ?? 0) as int;
+      // Fixed unnecessary_cast
+      final hg = m.homeScore ?? 0;
+      final ag = m.awayScore ?? 0;
 
       home.played++;
       away.played++;

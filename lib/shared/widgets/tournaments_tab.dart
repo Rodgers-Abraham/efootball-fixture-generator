@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
 import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
+import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
 import 'package:efootball_fixture_generator/features/tournament/domain/entities/tournament_entity.dart';
 import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
 import 'package:efootball_fixture_generator/features/tournament/presentation/widgets/join_code_dialog.dart';
+import 'package:efootball_fixture_generator/shared/widgets/login_prompt.dart';
 
 class TournamentsTab extends ConsumerWidget {
   const TournamentsTab({super.key});
@@ -13,21 +15,34 @@ class TournamentsTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tournamentsAsync = ref.watch(tournamentListProvider);
+    final isLoggedIn = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Tournaments'),
+        title: const Text('TOURNAMENTS'),
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner_outlined),
             tooltip: 'Join with Code',
-            onPressed: () => showJoinCodeDialog(context, ref),
+            onPressed: () {
+              if (isLoggedIn) {
+                showJoinCodeDialog(context, ref);
+              } else {
+                showLoginPrompt(context, 'join tournaments');
+              }
+            },
           ),
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             tooltip: 'Create Tournament',
-            onPressed: () => context.push(AppConstants.routeTournamentCreate),
+            onPressed: () {
+              if (isLoggedIn) {
+                context.push(AppConstants.routeTournamentCreate);
+              } else {
+                showLoginPrompt(context, 'create tournaments');
+              }
+            },
           ),
         ],
       ),
@@ -69,15 +84,20 @@ class TournamentsTab extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Tap + to create your first tournament',
+                    'Join or create your first tournament',
                     style: TextStyle(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
                     icon: const Icon(Icons.add),
                     label: const Text('CREATE TOURNAMENT'),
-                    onPressed: () => context.push(
-                        AppConstants.routeTournamentCreate),
+                    onPressed: () {
+                      if (isLoggedIn) {
+                        context.push(AppConstants.routeTournamentCreate);
+                      } else {
+                        showLoginPrompt(context, 'create tournaments');
+                      }
+                    },
                   ),
                 ],
               ),
@@ -93,9 +113,14 @@ class TournamentsTab extends ConsumerWidget {
                 tournament: tournaments[i],
                 onTap: () => context
                     .push('/tournament/${tournaments[i].id}'),
-                onDelete: () => ref
-                    .read(tournamentListProvider.notifier)
-                    .deleteTournament(tournaments[i].id),
+                onDelete: () {
+                  if (isLoggedIn) {
+                    ref.read(tournamentListProvider.notifier)
+                        .deleteTournament(tournaments[i].id);
+                  } else {
+                    showLoginPrompt(context, 'delete tournaments');
+                  }
+                },
               ),
             ),
           );

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:efootball_fixture_generator/core/errors/failures.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
@@ -26,5 +27,10 @@ abstract class AuthRepository {
     String? username,
     String? teamTag,
     String? avatarUrl,
+  });
+
+  Future<Either<Failure, String>> uploadAvatar({
+    required String userId,
+    required File imageFile,
   });
 }

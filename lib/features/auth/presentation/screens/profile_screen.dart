@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
 import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
@@ -40,6 +42,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     setState(() => _isEditing = true);
   }
 
+  Future<void> _pickAndUploadAvatar() async {
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 75,
+    );
+
+    if (image != null) {
+      setState(() => _saving = true);
+      final error = await ref.read(authNotifierProvider.notifier).uploadAvatar(File(image.path));
+      
+      if (!mounted) return;
+      setState(() => _saving = false);
+
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error), backgroundColor: AppColors.error),
+        );
+      }
+    }
+  }
+
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _saving = true);
@@ -72,7 +98,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Profile'),
+        title: const Text('PROFILE'),
         actions: [
           authAsync.when(
             data: (user) => user == null
@@ -107,7 +133,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         onPressed: () => _startEditing(user),
                       ),
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
         ],
       ),
@@ -130,6 +156,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   user: user,
                   onSignOut: () =>
                       ref.read(authNotifierProvider.notifier).signOut(),
+                  onAvatarTap: _pickAndUploadAvatar,
                 );
         },
       ),
@@ -138,51 +165,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 }
 
 // ── View mode ──────────────────────────────────────────────────
-class _ViewBody extends StatelessWidget {
+class _ViewBody extends ConsumerWidget {
   final UserEntity user;
   final VoidCallback onSignOut;
+  final VoidCallback onAvatarTap;
 
-  const _ViewBody({required this.user, required this.onSignOut});
+  const _ViewBody({
+    required this.user, 
+    required this.onSignOut,
+    required this.onAvatarTap,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final trophyAsync = ref.watch(userTrophiesProvider(user.id));
+
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       children: [
         // Avatar
         Center(
           child: Stack(
             children: [
-              CircleAvatar(
-                radius: 52,
-                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                backgroundImage: user.avatarUrl != null
-                    ? NetworkImage(user.avatarUrl!)
-                    : null,
-                child: user.avatarUrl == null
-                    ? Text(
-                        user.teamTag,
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 2,
-                        ),
-                      )
-                    : null,
+              GestureDetector(
+                onTap: onAvatarTap,
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                  backgroundImage: user.avatarUrl != null
+                      ? NetworkImage(user.avatarUrl!)
+                      : null,
+                  child: user.avatarUrl == null
+                      ? Text(
+                          user.teamTag,
+                          style: const TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 2,
+                          ),
+                        )
+                      : null,
+                ),
               ),
               Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.background, width: 2),
+                bottom: 4,
+                right: 4,
+                child: GestureDetector(
+                  onTap: onAvatarTap,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.background, width: 3),
+                    ),
+                    child: const Icon(Icons.camera_alt,
+                        color: Colors.black, size: 16),
                   ),
-                  child: const Icon(Icons.sports_soccer,
-                      color: Colors.white, size: 14),
                 ),
               ),
             ],
@@ -195,32 +235,104 @@ class _ViewBody extends StatelessWidget {
             user.username,
             style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
+              fontSize: 26,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
             ),
           ),
         ),
         Center(
           child: Container(
-            margin: const EdgeInsets.only(top: 6),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.4)),
+                  color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: Text(
               user.teamTag,
               style: const TextStyle(
                 color: AppColors.primary,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
                 letterSpacing: 2,
               ),
             ),
           ),
         ),
+        const SizedBox(height: 32),
+
+        // 🏆 Trophy Cabinet
+        const Text(
+          'TROPHY CABINET',
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.border),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                AppColors.surface,
+                AppColors.primary.withValues(alpha: 0.05),
+              ],
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.trophyGold.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.emoji_events, color: AppColors.trophyGold, size: 32),
+              ),
+              const SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  trophyAsync.when(
+                    data: (count) => Text(
+                      '$count',
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    loading: () => const SizedBox(
+                      width: 20, height: 20, 
+                      child: CircularProgressIndicator(strokeWidth: 2)
+                    ),
+                    error: (_, __) => const Text('0'),
+                  ),
+                  const Text(
+                    'Tournament Victories',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
         const SizedBox(height: 32),
 
         // Details card
@@ -242,12 +354,13 @@ class _ViewBody extends StatelessWidget {
           onPressed: onSignOut,
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.error,
-            side: const BorderSide(color: AppColors.error),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            side: const BorderSide(color: AppColors.error, width: 1.5),
+            padding: const EdgeInsets.symmetric(vertical: 16),
           ),
           icon: const Icon(Icons.logout),
           label: const Text('SIGN OUT'),
         ),
+        const SizedBox(height: 24),
       ],
     );
   }
@@ -262,7 +375,7 @@ class _InfoCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
       ),
       child: Column(children: children),
@@ -280,15 +393,15 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.primary, size: 20),
+      leading: Icon(icon, color: AppColors.primary, size: 22),
       title: Text(label,
           style: const TextStyle(
-              color: AppColors.textSecondary, fontSize: 12)),
+              color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
       subtitle: Text(value,
           style: const TextStyle(
               color: AppColors.textPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w600)),
+              fontSize: 16,
+              fontWeight: FontWeight.w700)),
     );
   }
 }
@@ -315,19 +428,19 @@ class _EditBody extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         children: [
           const Text(
-            'EDIT PROFILE',
+            'EDIT ACCOUNT DETAILS',
             style: TextStyle(
               color: AppColors.textSecondary,
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w800,
               letterSpacing: 1.5,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           TextFormField(
             controller: usernameCtrl,
             enabled: !saving,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600),
             decoration: const InputDecoration(
               labelText: 'Username',
               prefixIcon: Icon(Icons.person_outline),
@@ -335,13 +448,13 @@ class _EditBody extends StatelessWidget {
             validator: (v) =>
                 v == null || v.trim().isEmpty ? 'Username is required' : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           TextFormField(
             controller: teamTagCtrl,
             enabled: !saving,
             maxLength: 3,
             textCapitalization: TextCapitalization.characters,
-            style: const TextStyle(color: AppColors.textPrimary),
+            style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w900, letterSpacing: 2),
             decoration: const InputDecoration(
               labelText: 'Team Tag (3 letters)',
               prefixIcon: Icon(Icons.tag),

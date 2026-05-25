@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:efootball_fixture_generator/core/errors/failures.dart';
 import 'package:efootball_fixture_generator/features/auth/data/datasources/auth_remote_datasource.dart';
@@ -82,6 +83,22 @@ class AuthRepositoryImpl implements AuthRepository {
         avatarUrl: avatarUrl,
       );
       return Right(model.toEntity());
+    } on Exception catch (e) {
+      return Left(Failure.auth(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadAvatar({
+    required String userId,
+    required File imageFile,
+  }) async {
+    try {
+      final url = await _datasource.uploadAvatar(
+        userId: userId,
+        imageFile: imageFile,
+      );
+      return Right(url);
     } on Exception catch (e) {
       return Left(Failure.auth(message: e.toString()));
     }

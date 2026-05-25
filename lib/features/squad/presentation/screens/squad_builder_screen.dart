@@ -8,6 +8,7 @@ import 'package:efootball_fixture_generator/features/squad/domain/entities/playe
 import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
 import 'package:efootball_fixture_generator/features/squad/presentation/providers/squad_provider.dart';
 import 'package:efootball_fixture_generator/features/squad/presentation/widgets/player_card_chip.dart';
+import 'package:efootball_fixture_generator/shared/widgets/login_prompt.dart';
 
 class SquadBuilderScreen extends ConsumerStatefulWidget {
   const SquadBuilderScreen({super.key});
@@ -19,7 +20,7 @@ class SquadBuilderScreen extends ConsumerStatefulWidget {
 class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
   final _searchController = TextEditingController();
   Timer? _debounce;
-  int? _selectedSlot; // slot index being filled
+  int? _selectedSlot;
 
   @override
   void dispose() {
@@ -37,6 +38,11 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
   }
 
   void _onSlotTap(int slotIndex) {
+    final isLoggedIn = ref.read(isAuthenticatedProvider);
+    if (!isLoggedIn) {
+      showLoginPrompt(context, 'edit your squad');
+      return;
+    }
     setState(() {
       _selectedSlot = _selectedSlot == slotIndex ? null : slotIndex;
     });
@@ -66,11 +72,12 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
     final squadAsync = ref.watch(userSquadProvider);
     final searchResults = ref.watch(cardSearchResultsProvider);
     final user = ref.watch(authNotifierProvider).valueOrNull;
+    final searchQuery = ref.watch(cardSearchQueryProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(user != null ? '${user.teamTag} Squad' : 'My Squad'),
+        title: Text(user != null ? '${user.teamTag} SQUAD' : 'MY SQUAD'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -78,58 +85,130 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _onSearchChanged,
-              style: const TextStyle(color: AppColors.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'Search player cards...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref.read(cardSearchQueryProvider.notifier).state = '';
-                        },
-                      )
-                    : null,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearchChanged,
+                style: const TextStyle(color: AppColors.textPrimary),
+                decoration: InputDecoration(
+                  hintText: 'Search player cards...',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            ref.read(cardSearchQueryProvider.notifier).state = '';
+                          },
+                        )
+                      : null,
+                ),
               ),
             ),
           ),
-
-          // Search results overlay
-          if (ref.watch(cardSearchQueryProvider).isNotEmpty)
-            _buildSearchResults(searchResults),
-
-          // Squad grid
-          Expanded(
-            child: squadAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Text('Error: $e',
-                    style:
-                        const TextStyle(color: AppColors.error)),
-              ),
-              data: (squad) => _buildSquadGrid(squad),
+          if (searchQuery.isNotEmpty)
+            SliverToBoxAdapter(
+              child: _buildSearchResults(searchResults),
             ),
+          if (_selectedSlot != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, color: AppColors.accentNeon, size: 16),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'Slot ${_selectedSlot! + 1} selected — tap a card to assign',
+                          style: const TextStyle(color: AppColors.accentNeon, fontSize: 13),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () => setState(() => _selectedSlot = null),
+                        child: const Icon(Icons.close, color: AppColors.textSecondary, size: 16),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          squadAsync.when(
+            loading: () => const SliverFillRemaining(
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (e, _) => SliverToBoxAdapter(
+              child: Center(child: Text('Error: $e', style: const TextStyle(color: AppColors.error))),
+            ),
+            data: (squad) {
+              final slotMap = {for (final item in squad) item.slotIndex: item};
+              return SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    _sectionHeader('STARTERS (11)',
+                        '${slotMap.keys.where((k) => k < AppConstants.maxStarters).length}/11'),
+                    const SizedBox(height: 10),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 0.64,
+                      ),
+                      itemCount: AppConstants.maxStarters,
+                      itemBuilder: (context, i) => _buildSlot(i, slotMap[i]),
+                    ),
+                    const SizedBox(height: 24),
+                    _sectionHeader('BENCH (12)',
+                        '${slotMap.keys.where((k) => k >= AppConstants.maxStarters).length}/12'),
+                    const SizedBox(height: 10),
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 0.64,
+                      ),
+                      itemCount: AppConstants.maxSubstitutes,
+                      itemBuilder: (context, i) => _buildSlot(
+                        AppConstants.maxStarters + i,
+                        slotMap[AppConstants.maxStarters + i],
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                  ]),
+                ),
+              );
+            },
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchResults(
-      AsyncValue<List<PlayerCardEntity>> searchResults) {
+  Widget _buildSearchResults(AsyncValue<List<PlayerCardEntity>> searchResults) {
     return Container(
       constraints: const BoxConstraints(maxHeight: 200),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(10),
@@ -137,24 +216,17 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
       ),
       child: searchResults.when(
         loading: () => const Center(
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: CircularProgressIndicator(),
-          ),
+          child: Padding(padding: EdgeInsets.all(16), child: CircularProgressIndicator()),
         ),
-        error: (e, _) => Center(
-          child: Text('Search error',
-              style: const TextStyle(color: AppColors.error)),
+        error: (e, _) => const Center(
+          child: Text('Search error', style: TextStyle(color: AppColors.error)),
         ),
         data: (cards) {
           if (cards.isEmpty) {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(16),
-                child: Text(
-                  'No cards found',
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
+                child: Text('No cards found', style: TextStyle(color: AppColors.textSecondary)),
               ),
             );
           }
@@ -179,47 +251,28 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
                         )
                       : _searchPlaceholder(),
                 ),
-                title: Text(
-                  card.playerName,
-                  style: const TextStyle(
-                      color: AppColors.textPrimary,
-                      fontWeight: FontWeight.w600),
-                ),
+                title: Text(card.playerName, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w600)),
                 subtitle: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                       decoration: BoxDecoration(
                         color: badgeColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                            color: badgeColor.withValues(alpha: 0.5)),
+                        border: Border.all(color: badgeColor.withValues(alpha: 0.5)),
                       ),
-                      child: Text(
-                        card.cardType,
-                        style: TextStyle(
-                            color: badgeColor,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800),
-                      ),
+                      child: Text(card.cardType, style: TextStyle(color: badgeColor, fontSize: 9, fontWeight: FontWeight.w800)),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      '${card.maxRating}',
-                      style: const TextStyle(
-                          color: AppColors.accentNeon,
-                          fontWeight: FontWeight.w900),
-                    ),
+                    Text('${card.maxRating}', style: const TextStyle(color: AppColors.accentNeon, fontWeight: FontWeight.w900)),
                   ],
                 ),
                 trailing: tappable
                     ? ElevatedButton(
                         onPressed: () => _assignCard(card),
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           minimumSize: Size.zero,
                         ),
                         child: const Text('Add'),
@@ -233,95 +286,6 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
     );
   }
 
-  Widget _buildSquadGrid(List<SquadItemEntity> squad) {
-    final slotMap = {for (final item in squad) item.slotIndex: item};
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Selected slot hint
-          if (_selectedSlot != null)
-            Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-                border:
-                    Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.info_outline,
-                      color: AppColors.accentNeon, size: 16),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'Slot ${_selectedSlot! + 1} selected — tap a card to assign',
-                      style: const TextStyle(
-                        color: AppColors.accentNeon,
-                        fontSize: 13,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () => setState(() => _selectedSlot = null),
-                    child: const Icon(Icons.close,
-                        color: AppColors.textSecondary, size: 16),
-                  ),
-                ],
-              ),
-            ),
-
-          // Starters
-          _sectionHeader('STARTERS (11)',
-              '${slotMap.keys.where((k) => k < AppConstants.maxStarters).length}/11'),
-          const SizedBox(height: 10),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 0.72,
-            ),
-            itemCount: AppConstants.maxStarters,
-            itemBuilder: (context, i) => _buildSlot(i, slotMap[i]),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Bench (12 substitutes in a 4-column grid)
-          _sectionHeader('BENCH (12)',
-              '${slotMap.keys.where((k) => k >= AppConstants.maxStarters).length}/12'),
-          const SizedBox(height: 10),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-              childAspectRatio: 0.72,
-            ),
-            itemCount: AppConstants.maxSubstitutes,
-            itemBuilder: (context, i) => _buildSlot(
-              AppConstants.maxStarters + i,
-              slotMap[AppConstants.maxStarters + i],
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
   Widget _searchPlaceholder() => Container(
         width: 44,
         height: 56,
@@ -329,8 +293,7 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
           color: AppColors.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(6),
         ),
-        child: const Icon(Icons.person,
-            color: AppColors.textDisabled, size: 24),
+        child: const Icon(Icons.person, color: AppColors.textDisabled, size: 24),
       );
 
   Widget _buildSlot(int slotIndex, SquadItemEntity? item) {
@@ -338,17 +301,17 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
     final filled = item != null;
 
     if (filled) {
-      return Stack(
-        clipBehavior: Clip.none,
-        children: [
-          PlayerCardChip(
-            card: item.card,
-            isSelected: isSelected,
-            onTap: () => _onSlotTap(slotIndex),
-            onRemove: () =>
-                ref.read(userSquadProvider.notifier).removeCard(item.squadItemId),
-          ),
-        ],
+      return PlayerCardChip(
+        card: item.card,
+        isSelected: isSelected,
+        onTap: () => _onSlotTap(slotIndex),
+        onRemove: () {
+          if (ref.read(isAuthenticatedProvider)) {
+            ref.read(userSquadProvider.notifier).removeCard(item.squadItemId);
+          } else {
+            showLoginPrompt(context, 'edit your squad');
+          }
+        },
       );
     }
 
@@ -366,36 +329,15 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
             color: isSelected ? AppColors.accentNeon : AppColors.border,
             width: isSelected ? 1.5 : 1,
           ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.accentNeon.withValues(alpha: 0.25),
-                    blurRadius: 8,
-                  )
-                ]
-              : null,
+          boxShadow: isSelected ? [BoxShadow(color: AppColors.accentNeon.withValues(alpha: 0.25), blurRadius: 8)] : null,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                isSelected ? Icons.add_circle : Icons.add,
-                color: isSelected
-                    ? AppColors.accentNeon
-                    : AppColors.textDisabled,
-                size: 20,
-              ),
+              Icon(isSelected ? Icons.add_circle : Icons.add, color: isSelected ? AppColors.accentNeon : AppColors.textDisabled, size: 20),
               const SizedBox(height: 4),
-              Text(
-                '${slotIndex + 1}',
-                style: TextStyle(
-                  color: isSelected
-                      ? AppColors.accentNeon
-                      : AppColors.textDisabled,
-                  fontSize: 10,
-                ),
-              ),
+              Text('${slotIndex + 1}', style: TextStyle(color: isSelected ? AppColors.accentNeon : AppColors.textDisabled, fontSize: 10)),
             ],
           ),
         ),
@@ -406,30 +348,12 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
   Widget _sectionHeader(String title, String count) {
     return Row(
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-          ),
-        ),
+        Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13, fontWeight: FontWeight.w700, letterSpacing: 1.5)),
         const Spacer(),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            count,
-            style: const TextStyle(
-              color: AppColors.primary,
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.2), borderRadius: BorderRadius.circular(12)),
+          child: Text(count, style: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w700)),
         ),
       ],
     );

@@ -24,12 +24,11 @@ class OcrLocalDatasource {
     for (final block in recognizedText.blocks) {
       for (final line in block.lines) {
         for (final element in line.elements) {
-          if (element.boundingBox != null) {
-            allBlocks.add(_TextBlock(
-              text: element.text,
-              rect: element.boundingBox!,
-            ));
-          }
+          // Fixed unnecessary_null_comparison and unnecessary_non_null_assertion
+          allBlocks.add(_TextBlock(
+            text: element.text,
+            rect: element.boundingBox,
+          ));
         }
       }
     }
@@ -65,7 +64,8 @@ class OcrLocalDatasource {
     // ── Helper: find stat values near an anchor keyword ────────
     // Strategy: find the anchor block, then find the nearest numeric
     // blocks to its left and right (or above/below) by Y proximity.
-    List<int?> _extractStatPair(String anchorKeyword) {
+    // Fixed no_leading_underscores_for_local_identifiers
+    List<int?> extractStatPair(String anchorKeyword) {
       // Find anchor in blocks
       _TextBlock? anchor;
       for (final b in allBlocks) {
@@ -138,7 +138,7 @@ class OcrLocalDatasource {
     }
 
     // ── Possession ─────────────────────────────────────────────
-    final possession = _extractStatPair('Possession');
+    final possession = extractStatPair('Possession');
     if (possession[0] != null &&
         possession[1] != null &&
         (possession[0]! + possession[1]!) <= 105) {
@@ -147,27 +147,27 @@ class OcrLocalDatasource {
     }
 
     // ── Total Shots ────────────────────────────────────────────
-    final shots = _extractStatPair('Total Shots');
+    final shots = extractStatPair('Total Shots');
     homeShots = shots[0];
     awayShots = shots[1];
     if (homeShots == null) {
-      final shots2 = _extractStatPair('Shots');
+      final shots2 = extractStatPair('Shots');
       homeShots = shots2[0];
       awayShots = shots2[1];
     }
 
     // ── Shots on Target ────────────────────────────────────────
-    final sot = _extractStatPair('Shots on Target');
+    final sot = extractStatPair('Shots on Target');
     homeShotsOnTarget = sot[0];
     awayShotsOnTarget = sot[1];
     if (homeShotsOnTarget == null) {
-      final sot2 = _extractStatPair('on Target');
+      final sot2 = extractStatPair('on Target');
       homeShotsOnTarget = sot2[0];
       awayShotsOnTarget = sot2[1];
     }
 
     // ── Fouls ──────────────────────────────────────────────────
-    final fouls = _extractStatPair('Fouls');
+    final fouls = extractStatPair('Fouls');
     homeFouls = fouls[0];
     awayFouls = fouls[1];
 

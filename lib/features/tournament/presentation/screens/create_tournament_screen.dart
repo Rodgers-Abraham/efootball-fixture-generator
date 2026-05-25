@@ -53,13 +53,9 @@ class _CreateTournamentScreenState
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedUserIds.length < 2) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Select at least 2 participants')),
-      );
-      return;
-    }
+    
+    // NOTE: Removed requirement for at least 2 participants.
+    // Users can now create an empty tournament and have others join later.
 
     setState(() => _loading = true);
 
@@ -170,7 +166,7 @@ class _CreateTournamentScreenState
                           color: AppColors.textPrimary,
                         ),
                       )
-                    : const Text('GENERATE FIXTURES'),
+                    : const Text('CREATE TOURNAMENT'),
               ),
             ),
           ],

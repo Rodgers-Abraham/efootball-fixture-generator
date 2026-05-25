@@ -135,7 +135,8 @@ class PlayerTapChip extends StatelessWidget {
           fit: BoxFit.cover,
           loadingBuilder: (_, child, progress) =>
               progress == null ? child : _placeholderAvatar(),
-          errorBuilder: (_, error, __) {
+          // Fixed unnecessary_underscores
+          errorBuilder: (_, error, _) {
             debugPrint('AVATAR ERROR for $imageUrl: $error');
             return _placeholderAvatar();
           },

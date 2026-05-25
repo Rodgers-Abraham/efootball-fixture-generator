@@ -12,14 +12,14 @@ abstract final class AppConstants {
   static const String routeRoot = '/';
   static const String routeLogin = '/login';
   static const String routeRegister = '/register';
-  static const String routeHome = '/home';
-  static const String routeSquad = '/squad';
-  static const String routeTournamentList = '/tournaments';
+  static const String routeHome = '/home/tournaments';
+  static const String routeSquad = '/home/squad';
+  static const String routeTournamentList = '/home/tournaments';
   static const String routeTournamentCreate = '/tournament/create';
   static const String routeTournamentDetail = '/tournament/:id';
   static const String routeMatchScan = '/tournament/:id/match/:matchId/scan';
   static const String routeMatchQuickTap = '/tournament/:id/match/:matchId/quick-tap';
-  static const String routeAnalytics = '/analytics';
+  static const String routeAnalytics = '/home/analytics';
   static const String routeStandings = '/tournament/:id/standings';
   static const String routeProfile = '/home/profile';
 

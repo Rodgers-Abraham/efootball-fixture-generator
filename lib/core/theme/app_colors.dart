@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
 
-/// Midnight Crimson color palette
+/// Sports-themed "Stadium & Pitch" color palette
 abstract final class AppColors {
-  // Backgrounds
-  static const Color background = Color(0xFF0A0A0F);
-  static const Color surface = Color(0xFF12121A);
-  static const Color surfaceVariant = Color(0xFF1A1A26);
+  // Backgrounds - Deep Stadium Navy
+  static const Color background = Color(0xFF0F172A);
+  static const Color surface = Color(0xFF1E293B);
+  static const Color surfaceVariant = Color(0xFF334155);
 
-  // Crimson spectrum
-  static const Color primary = Color(0xFFC0392B);
-  static const Color secondary = Color(0xFFE74C3C);
-  static const Color accentNeon = Color(0xFFFF6B6B);
+  // Core Theme - Pitch Green & Gold
+  static const Color primary = Color(0xFF22C55E); // Pitch Green
+  static const Color secondary = Color(0xFF16A34A); // Deep Grass
+  static const Color accentNeon = Color(0xFF4ADE80); // Neon Highlight
+  static const Color trophyGold = Color(0xFFFFD700); // Championship Gold
 
   // Text
-  static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFF8B8B9E);
-  static const Color textDisabled = Color(0xFF3D3D4F);
+  static const Color textPrimary = Color(0xFFF8FAFC);
+  static const Color textSecondary = Color(0xFF94A3B8);
+  static const Color textDisabled = Color(0xFF475569);
 
   // Status
-  static const Color success = Color(0xFF27AE60);
-  static const Color warning = Color(0xFFF39C12);
-  static const Color error = Color(0xFFE74C3C);
-  static const Color info = Color(0xFF3498DB);
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color error = Color(0xFFEF4444);
+  static const Color info = Color(0xFF3B82F6);
 
   // Borders & dividers
-  static const Color border = Color(0xFF1E1E2E);
-  static const Color borderNeon = Color(0xFFFF6B6B);
+  static const Color border = Color(0xFF334155);
+  static const Color borderNeon = Color(0xFF22C55E);
 
   // Card type badge colours
   static const Color cardTypeShowTime  = Color(0xFFFFD700); // gold

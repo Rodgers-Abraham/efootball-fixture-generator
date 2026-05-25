@@ -48,16 +48,16 @@ class PlayerCardChip extends StatelessWidget {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Card image
+                // Card image - Reduced height to 64 to prevent overflows
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(9)),
                   child: _buildImage(),
                 ),
-                // Name + badge row
+                // Name + badge row - reduced padding
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 4, vertical: 4),
+                      horizontal: 4, vertical: 2),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -72,7 +72,7 @@ class PlayerCardChip extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 1),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
@@ -138,14 +138,18 @@ class PlayerCardChip extends StatelessWidget {
   Widget _buildImage() {
     final url = card.cardImageUrl;
     if (url != null && url.isNotEmpty) {
-      return Image.network(
-        url,
-        width: double.infinity,
-        height: 72,
-        fit: BoxFit.cover,
-        loadingBuilder: (_, child, progress) =>
-            progress == null ? child : _imagePlaceholder(),
-        errorBuilder: (_, __, ___) => _imagePlaceholder(),
+      return Container(
+        color: Colors.black26, // Background for the card space
+        child: Image.network(
+          url,
+          width: double.infinity,
+          height: 64, 
+          fit: BoxFit.contain, // Changed from cover to show the full card
+          loadingBuilder: (_, child, progress) =>
+              progress == null ? child : _imagePlaceholder(),
+          // Fixed unnecessary_underscores
+          errorBuilder: (_, _, _) => _imagePlaceholder(),
+        ),
       );
     }
     return _imagePlaceholder();
@@ -154,7 +158,7 @@ class PlayerCardChip extends StatelessWidget {
   Widget _imagePlaceholder() {
     return Container(
       width: double.infinity,
-      height: 72,
+      height: 64, // Reduced from 72
       color: AppColors.primary.withValues(alpha: 0.1),
       child: const Icon(Icons.person,
           color: AppColors.textDisabled, size: 32),
