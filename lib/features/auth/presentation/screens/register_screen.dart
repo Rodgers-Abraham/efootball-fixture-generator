@@ -115,7 +115,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 TextFormField(
                   controller: _teamTagController,
                   style: const TextStyle(
-                    color: AppColors.accentNeon,
+                    color: AppColors.accentVolt,
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 4,

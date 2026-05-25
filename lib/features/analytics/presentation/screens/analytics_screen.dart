@@ -273,7 +273,7 @@ class _LeaderboardRow extends StatelessWidget {
                     : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(20),
                 border: isFirst
-                    ? Border.all(color: AppColors.accentNeon.withValues(alpha: 0.5))
+                    ? Border.all(color: AppColors.accentVolt.withValues(alpha: 0.5))
                     : null,
               ),
               child: Column(
@@ -282,7 +282,7 @@ class _LeaderboardRow extends StatelessWidget {
                     '$count',
                     style: TextStyle(
                       color: isFirst
-                          ? AppColors.accentNeon
+                          ? AppColors.accentVolt
                           : AppColors.textPrimary,
                       fontSize: isFirst ? 22 : 18,
                       fontWeight: FontWeight.w900,

@@ -1,44 +1,43 @@
 import 'package:flutter/material.dart';
 
-/// Sports-themed "Stadium & Pitch" color palette
+/// Cyber Stadium / Esports color palette
+/// Spec: Absolute black canvas, deep dark containers, neon highlights.
 abstract final class AppColors {
-  // Backgrounds - Deep Stadium Navy
-  static const Color background = Color(0xFF0F172A);
-  static const Color surface = Color(0xFF1E293B);
-  static const Color surfaceVariant = Color(0xFF334155);
+  // Backgrounds - Absolute Black & Deep Dark
+  static const Color background = Color(0xFF000000);
+  static const Color surface = Color(0xFF121212);
+  static const Color surfaceVariant = Color(0xFF1A1A1A);
 
-  // Core Theme - Pitch Green & Gold
-  static const Color primary = Color(0xFF22C55E); // Pitch Green
-  static const Color secondary = Color(0xFF16A34A); // Deep Grass
-  static const Color accentNeon = Color(0xFF4ADE80); // Neon Highlight
+  // Core Neon Accents
+  static const Color primary = Color(0xFF00E5FF); // Neon Cyan
+  static const Color secondary = Color(0xFF8B5CF6); // Electric Violet
+  static const Color accentVolt = Color(0xFF00FF66); // Neon Volt Green
+  static const Color accentNeon = Color(0xFF00FF66); // Alias for backward compatibility
+  static const Color accentPurple = Color(0xFF963CFF); // Neon Purple
   static const Color trophyGold = Color(0xFFFFD700); // Championship Gold
 
   // Text
-  static const Color textPrimary = Color(0xFFF8FAFC);
-  static const Color textSecondary = Color(0xFF94A3B8);
-  static const Color textDisabled = Color(0xFF475569);
+  static const Color textPrimary = Color(0xFFFFFFFF);
+  static const Color textSecondary = Color(0xFFAAAAAA);
+  static const Color textDisabled = Color(0xFF444444);
 
   // Status
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color info = Color(0xFF3B82F6);
+  static const Color success = Color(0xFF00FF66);
+  static const Color warning = Color(0xFFFFB300);
+  static const Color error = Color(0xFFFF3D00);
+  static const Color info = Color(0xFF00E5FF);
 
-  // Borders & dividers
-  static const Color border = Color(0xFF334155);
-  static const Color borderNeon = Color(0xFF22C55E);
+  // Borders & Glows
+  static const Color border = Color(0xFF222222);
+  static const Color borderNeon = Color(0xFF00E5FF);
 
   // Card type badge colours
-  static const Color cardTypeShowTime  = Color(0xFFFFD700); // gold
-  static const Color cardTypePOTW      = Color(0xFF00E5FF); // cyan
-  static const Color cardTypeBigTime   = Color(0xFF2ECC71); // green
-  static const Color cardTypeHighlight = Color(0xFFFF6B35); // orange
-  static const Color cardTypeEpic      = Color(0xFF9B59B6); // purple
-  static const Color cardTypeStandard  = Color(0xFF95A5A6); // grey
-
-  // Gradient stops
-  static const List<Color> crimsonGradient = [primary, secondary];
-  static const List<Color> darkGradient = [background, surface];
+  static const Color cardTypeShowTime  = Color(0xFFFFD700);
+  static const Color cardTypePOTW      = Color(0xFF00E5FF);
+  static const Color cardTypeBigTime   = Color(0xFF00FF66);
+  static const Color cardTypeHighlight = Color(0xFFFF6B35);
+  static const Color cardTypeEpic      = Color(0xFF963CFF);
+  static const Color cardTypeStandard  = Color(0xFF777777);
 
   static Color cardTypeColor(String cardType) {
     switch (cardType) {
@@ -51,7 +50,6 @@ abstract final class AppColors {
     }
   }
 
-  /// Short label shown on card badges
   static String cardTypeLabel(String cardType) {
     switch (cardType) {
       case 'Show Time':  return 'ST';

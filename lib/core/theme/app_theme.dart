@@ -3,21 +3,21 @@ import 'app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData get dark {
-    const colorScheme = ColorScheme(
+    final colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: AppColors.primary,
-      onPrimary: Colors.black, // Dark text on light green
-      primaryContainer: Color(0xFF14532D),
+      onPrimary: Colors.black,
+      primaryContainer: const Color(0xFF14532D),
       onPrimaryContainer: AppColors.textPrimary,
       secondary: AppColors.secondary,
       onSecondary: AppColors.textPrimary,
-      secondaryContainer: Color(0xFF166534),
+      secondaryContainer: const Color(0xFF166534),
       onSecondaryContainer: AppColors.textPrimary,
       tertiary: AppColors.trophyGold,
       onTertiary: Colors.black,
       error: AppColors.error,
       onError: AppColors.textPrimary,
-      errorContainer: Color(0xFF7F1D1D),
+      errorContainer: const Color(0xFF7F1D1D),
       onErrorContainer: AppColors.textPrimary,
       surface: AppColors.surface,
       onSurface: AppColors.textPrimary,
@@ -38,7 +38,6 @@ abstract final class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       canvasColor: AppColors.background,
 
-      // AppBar - Transparent for that modern stadium overlay look
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.textPrimary,
@@ -53,7 +52,6 @@ abstract final class AppTheme {
         iconTheme: IconThemeData(color: AppColors.textPrimary),
       ),
 
-      // Card - Glassmorphism style
       cardTheme: CardThemeData(
         color: AppColors.surface.withValues(alpha: 0.8),
         elevation: 0,
@@ -64,7 +62,6 @@ abstract final class AppTheme {
         margin: EdgeInsets.zero,
       ),
 
-      // Elevated button - Championship style
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -83,7 +80,6 @@ abstract final class AppTheme {
         ),
       ),
 
-      // Outlined button
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
@@ -100,10 +96,9 @@ abstract final class AppTheme {
         ),
       ),
 
-      // Text button
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.accentNeon,
+          foregroundColor: AppColors.accentVolt,
           textStyle: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
@@ -111,7 +106,6 @@ abstract final class AppTheme {
         ),
       ),
 
-      // Input decoration
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surface.withValues(alpha: 0.5),
@@ -137,7 +131,6 @@ abstract final class AppTheme {
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       ),
 
-      // Text theme
       textTheme: const TextTheme(
         displayLarge: TextStyle(
           color: AppColors.textPrimary,
@@ -187,7 +180,6 @@ abstract final class AppTheme {
         ),
       ),
 
-      // Bottom navigation
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
@@ -197,7 +189,6 @@ abstract final class AppTheme {
         selectedLabelStyle: TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
       ),
 
-      // Chip
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,
         selectedColor: AppColors.primary.withValues(alpha: 0.3),
@@ -213,7 +204,6 @@ abstract final class AppTheme {
         ),
       ),
 
-      // Tab bar
       tabBarTheme: const TabBarThemeData(
         labelColor: AppColors.primary,
         unselectedLabelColor: AppColors.textSecondary,
@@ -223,7 +213,6 @@ abstract final class AppTheme {
         unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
       ),
 
-      // Floating action button
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.black,
@@ -231,7 +220,6 @@ abstract final class AppTheme {
         shape: CircleBorder(),
       ),
 
-      // List tile
       listTileTheme: const ListTileThemeData(
         tileColor: Colors.transparent,
         textColor: AppColors.textPrimary,

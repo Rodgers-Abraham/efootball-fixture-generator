@@ -59,13 +59,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Logo / Title
                 _buildHeader(),
                 const SizedBox(height: 48),
-                // Form
                 _buildForm(),
                 const SizedBox(height: 24),
-                // CTA
                 _buildSignInButton(),
                 const SizedBox(height: 20),
                 _buildRegisterLink(),
@@ -90,7 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
           child: const Icon(
             Icons.sports_soccer,
-            color: AppColors.accentNeon,
+            color: AppColors.accentVolt,
             size: 36,
           ),
         ),
@@ -176,7 +173,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 height: 22,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.textPrimary,
+                  color: Colors.black,
                 ),
               )
             : const Text('SIGN IN'),

@@ -33,12 +33,12 @@ class PlayerCardChip extends StatelessWidget {
               : AppColors.surfaceVariant,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.accentNeon : AppColors.border,
+            color: isSelected ? AppColors.accentVolt : AppColors.border,
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
               ? [BoxShadow(
-                  color: AppColors.accentNeon.withValues(alpha: 0.3),
+                  color: AppColors.accentVolt.withValues(alpha: 0.3),
                   blurRadius: 8)]
               : null,
         ),
@@ -99,7 +99,7 @@ class PlayerCardChip extends StatelessWidget {
                           Text(
                             '${card.maxRating}',
                             style: const TextStyle(
-                              color: AppColors.accentNeon,
+                              color: AppColors.accentVolt,
                               fontSize: 11,
                               fontWeight: FontWeight.w900,
                             ),

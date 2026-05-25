@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
 import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
 import 'package:efootball_fixture_generator/features/auth/data/models/user_model.dart';
-import 'package:efootball_fixture_generator/features/squad/presentation/providers/squad_provider.dart';
 import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
 import 'package:efootball_fixture_generator/features/squad/data/models/squad_item_model.dart';
 import 'package:efootball_fixture_generator/features/squad/presentation/widgets/player_card_chip.dart';
@@ -148,7 +146,7 @@ class PublicProfileScreen extends ConsumerWidget {
                             ),
                           ),
                           loading: () => const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                          error: (_, __) => const Text('0'),
+                          error: (_, _) => const Text('0'),
                         ),
                         const Text('TOURNAMENT WINS', style: TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w800)),
                       ],

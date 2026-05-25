@@ -128,12 +128,12 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.info_outline, color: AppColors.accentNeon, size: 16),
+                      const Icon(Icons.info_outline, color: AppColors.accentVolt, size: 16),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           'Slot ${_selectedSlot! + 1} selected — tap a card to assign',
-                          style: const TextStyle(color: AppColors.accentNeon, fontSize: 13),
+                          style: const TextStyle(color: AppColors.accentVolt, fontSize: 13),
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -247,7 +247,7 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
                           width: 44,
                           height: 56,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _searchPlaceholder(),
+                          errorBuilder: (_, _, _) => _searchPlaceholder(),
                         )
                       : _searchPlaceholder(),
                 ),
@@ -265,7 +265,7 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
                       child: Text(card.cardType, style: TextStyle(color: badgeColor, fontSize: 9, fontWeight: FontWeight.w800)),
                     ),
                     const SizedBox(width: 6),
-                    Text('${card.maxRating}', style: const TextStyle(color: AppColors.accentNeon, fontWeight: FontWeight.w900)),
+                    Text('${card.maxRating}', style: const TextStyle(color: AppColors.accentVolt, fontWeight: FontWeight.w900)),
                   ],
                 ),
                 trailing: tappable
@@ -326,18 +326,18 @@ class _SquadBuilderScreenState extends ConsumerState<SquadBuilderScreen> {
               : AppColors.surfaceVariant.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
-            color: isSelected ? AppColors.accentNeon : AppColors.border,
+            color: isSelected ? AppColors.accentVolt : AppColors.border,
             width: isSelected ? 1.5 : 1,
           ),
-          boxShadow: isSelected ? [BoxShadow(color: AppColors.accentNeon.withValues(alpha: 0.25), blurRadius: 8)] : null,
+          boxShadow: isSelected ? [BoxShadow(color: AppColors.accentVolt.withValues(alpha: 0.25), blurRadius: 8)] : null,
         ),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(isSelected ? Icons.add_circle : Icons.add, color: isSelected ? AppColors.accentNeon : AppColors.textDisabled, size: 20),
+              Icon(isSelected ? Icons.add_circle : Icons.add, color: isSelected ? AppColors.accentVolt : AppColors.textDisabled, size: 20),
               const SizedBox(height: 4),
-              Text('${slotIndex + 1}', style: TextStyle(color: isSelected ? AppColors.accentNeon : AppColors.textDisabled, fontSize: 10)),
+              Text('${slotIndex + 1}', style: TextStyle(color: isSelected ? AppColors.accentVolt : AppColors.textDisabled, fontSize: 10)),
             ],
           ),
         ),

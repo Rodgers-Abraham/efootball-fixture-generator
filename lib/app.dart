@@ -16,21 +16,22 @@ import 'package:efootball_fixture_generator/features/squad/presentation/screens/
 import 'package:efootball_fixture_generator/features/tournament/presentation/screens/create_tournament_screen.dart';
 import 'package:efootball_fixture_generator/features/tournament/presentation/screens/fixture_list_screen.dart';
 import 'package:efootball_fixture_generator/features/tournament/presentation/screens/standings_screen.dart';
+import 'package:efootball_fixture_generator/features/tournament/presentation/screens/tournament_dashboard_screen.dart';
 import 'package:efootball_fixture_generator/shared/widgets/analytics_tab.dart';
 import 'package:efootball_fixture_generator/shared/widgets/home_shell.dart';
 import 'package:efootball_fixture_generator/shared/widgets/tournaments_tab.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+final _hubNavKey = GlobalKey<NavigatorState>(debugLabel: 'hub');
 final _tournamentsNavKey = GlobalKey<NavigatorState>(debugLabel: 'tournaments');
 final _squadNavKey = GlobalKey<NavigatorState>(debugLabel: 'squad');
 final _analyticsNavKey = GlobalKey<NavigatorState>(debugLabel: 'analytics');
 final _profileNavKey = GlobalKey<NavigatorState>(debugLabel: 'profile');
 
-// ── Auth change notifier so GoRouter re-runs redirect on login/logout ──
 class _RouterNotifier extends ChangeNotifier {
   _RouterNotifier(Ref ref) {
-    ref.listen(authNotifierProvider, (_, __) => notifyListeners());
-    ref.listen(onboardingCompletedProvider, (_, __) => notifyListeners());
+    ref.listen(authNotifierProvider, (_, _) => notifyListeners());
+    ref.listen(onboardingCompletedProvider, (_, _) => notifyListeners());
   }
 }
 
@@ -40,16 +41,14 @@ final _routerNotifierProvider = Provider<_RouterNotifier>((ref) {
   return n;
 });
 
-// ── Router ─────────────────────────────────────────────────────
 final routerProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(_routerNotifierProvider);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/home/tournaments',
+    initialLocation: '/home/hub',
     refreshListenable: notifier,
     redirect: (context, state) async {
-      // Check onboarding status directly in redirect to keep router stable
       final prefs = await SharedPreferences.getInstance();
       final isFirstLaunch = !(prefs.getBool('onboarding_completed') ?? false);
       final onboardingDone = ref.read(onboardingCompletedProvider);
@@ -66,8 +65,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
 
-      if (isLoggedIn && isAuthRoute) return '/home/tournaments';
-      if (state.matchedLocation == '/home') return '/home/tournaments';
+      if (isLoggedIn && isAuthRoute) return '/home/hub';
+      if (state.matchedLocation == '/home') return '/home/hub';
       
       return null;
     },
@@ -95,6 +94,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, navigationShell) =>
             HomeShell(navigationShell: navigationShell),
         branches: [
+          StatefulShellBranch(
+            navigatorKey: _hubNavKey,
+            routes: [
+              GoRoute(
+                path: '/home/hub',
+                builder: (context, state) => const TournamentDashboardScreen(),
+              ),
+            ],
+          ),
           StatefulShellBranch(
             navigatorKey: _tournamentsNavKey,
             routes: [

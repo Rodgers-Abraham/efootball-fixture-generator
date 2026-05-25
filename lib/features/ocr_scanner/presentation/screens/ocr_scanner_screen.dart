@@ -141,14 +141,14 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: state.stats != null
-              ? AppColors.accentNeon
+              ? AppColors.accentVolt
               : AppColors.border,
           width: state.stats != null ? 2 : 1,
         ),
         boxShadow: state.stats != null
             ? [
                 BoxShadow(
-                  color: AppColors.accentNeon.withValues(alpha: 0.25),
+                  color: AppColors.accentVolt.withValues(alpha: 0.25),
                   blurRadius: 16,
                   spreadRadius: 0,
                 )
@@ -219,10 +219,10 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
           Container(
             height: 4,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 colors: [
                   Colors.transparent,
-                  AppColors.accentNeon,
+                  AppColors.accentVolt,
                   Colors.transparent,
                 ],
               ),
@@ -230,7 +230,7 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
             ),
           )
               .animate(onPlay: (c) => c.repeat())
-              .shimmer(duration: 1200.ms, color: AppColors.accentNeon),
+              .shimmer(duration: 1200.ms, color: AppColors.accentVolt),
           const SizedBox(height: 16),
           const Text(
             'Scanning match data...',

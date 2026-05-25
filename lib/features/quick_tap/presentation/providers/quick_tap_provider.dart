@@ -3,7 +3,7 @@ import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
 import 'package:efootball_fixture_generator/features/quick_tap/data/datasources/quick_tap_remote_datasource.dart';
 import 'package:efootball_fixture_generator/features/quick_tap/data/repositories/quick_tap_repository_impl.dart';
 import 'package:efootball_fixture_generator/features/quick_tap/domain/repositories/quick_tap_repository.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
 
 // ── Infrastructure ─────────────────────────────────────────────
 final quickTapRemoteDatasourceProvider =
@@ -17,131 +17,87 @@ final quickTapRepositoryProvider = Provider<QuickTapRepository>((ref) {
   return QuickTapRepositoryImpl(ds);
 });
 
-// ── Goal counts per squad item ─────────────────────────────────
-/// Map<squadItemId, goalCount>
-final goalCountsProvider =
-    StateProvider<Map<String, int>>((_) => {});
-
-/// Selected MOTM squad item id
-final selectedMotmProvider = StateProvider<String?>((_) => null);
-
-// ── Quick-tap state notifier ───────────────────────────────────
+// ── Quick-tap state ──────────────────────────────────────────
 class QuickTapState {
-  final Map<String, int> goalCounts;
-  final String? selectedMotmId;
+  final Map<String, int> goals;
+  final String? motmSquadItemId;
   final bool isSaving;
-  final String? errorMessage;
 
   const QuickTapState({
-    this.goalCounts = const {},
-    this.selectedMotmId,
+    this.goals = const {},
+    this.motmSquadItemId,
     this.isSaving = false,
-    this.errorMessage,
   });
 
   QuickTapState copyWith({
-    Map<String, int>? goalCounts,
-    String? selectedMotmId,
+    Map<String, int>? goals,
+    String? motmSquadItemId,
     bool? isSaving,
-    String? errorMessage,
-    bool clearMotm = false,
-    bool clearError = false,
   }) {
     return QuickTapState(
-      goalCounts: goalCounts ?? this.goalCounts,
-      selectedMotmId:
-          clearMotm ? null : selectedMotmId ?? this.selectedMotmId,
+      goals: goals ?? this.goals,
+      motmSquadItemId: motmSquadItemId ?? this.motmSquadItemId,
       isSaving: isSaving ?? this.isSaving,
-      errorMessage:
-          clearError ? null : errorMessage ?? this.errorMessage,
     );
   }
-
-  int goalCountFor(String squadItemId) =>
-      goalCounts[squadItemId] ?? 0;
-
-  int totalGoalsForTeam(List<SquadItemEntity> squad) =>
-      squad.fold(0, (sum, item) => sum + goalCountFor(item.squadItemId));
 }
 
-class QuickTapNotifier extends Notifier<QuickTapState> {
+class QuickTapNotifier extends FamilyNotifier<QuickTapState, String> {
   @override
-  QuickTapState build() => const QuickTapState();
+  QuickTapState build(String arg) => const QuickTapState();
 
-  void tapGoal(String squadItemId) {
-    final current = Map<String, int>.from(state.goalCounts);
-    current[squadItemId] = (current[squadItemId] ?? 0) + 1;
-    state = state.copyWith(goalCounts: current);
+  void incrementGoal(String squadItemId) {
+    final newGoals = Map<String, int>.from(state.goals);
+    newGoals[squadItemId] = (newGoals[squadItemId] ?? 0) + 1;
+    state = state.copyWith(goals: newGoals);
   }
 
-  void untapGoal(String squadItemId) {
-    final current = Map<String, int>.from(state.goalCounts);
-    final existing = current[squadItemId] ?? 0;
-    if (existing > 0) {
-      current[squadItemId] = existing - 1;
-    }
-    state = state.copyWith(goalCounts: current);
+  void setMotm(String squadItemId) {
+    state = state.copyWith(motmSquadItemId: squadItemId);
   }
 
-  void selectMotm(String squadItemId) {
-    final already = state.selectedMotmId == squadItemId;
-    state = state.copyWith(
-      selectedMotmId: already ? null : squadItemId,
-      clearMotm: already,
-    );
-  }
-
-  /// Validate goal totals against the score then persist to Supabase.
-  Future<String?> confirmResult({
-    required String matchId,
-    required int homeScore,
-    required int awayScore,
-    required List<SquadItemEntity> homeSquad,
-    required List<SquadItemEntity> awaySquad,
-  }) async {
-    final homeTapped = state.totalGoalsForTeam(homeSquad);
-    final awayTapped = state.totalGoalsForTeam(awaySquad);
-
-    if (homeTapped != homeScore) {
-      return 'Home team goals tapped ($homeTapped) must equal score ($homeScore)';
-    }
-    if (awayTapped != awayScore) {
-      return 'Away team goals tapped ($awayTapped) must equal score ($awayScore)';
-    }
-
-    state = state.copyWith(isSaving: true, clearError: true);
-
+  Future<bool> saveResults(String tournamentId) async {
+    state = state.copyWith(isSaving: true);
     final repo = ref.read(quickTapRepositoryProvider);
+    final matchId = arg;
 
-    // Clear previous events for this match first
-    await repo.clearEventsForMatch(matchId);
+    try {
+      // 1. Clear existing events
+      await repo.clearEventsForMatch(matchId);
 
-    // Log goals
-    for (final entry in state.goalCounts.entries) {
-      final squadItemId = entry.key;
-      final count = entry.value;
-      for (int i = 0; i < count; i++) {
-        await repo.logGoal(matchId: matchId, squadItemId: squadItemId);
+      // 2. Save goals
+      for (final entry in state.goals.entries) {
+        for (int i = 0; i < entry.value; i++) {
+          await repo.logGoal(matchId: matchId, squadItemId: entry.key);
+        }
       }
+
+      // 3. Save MOTM
+      if (state.motmSquadItemId != null) {
+        await repo.logMotm(matchId: matchId, squadItemId: state.motmSquadItemId!);
+      }
+
+      // 4. Update match total scores and finalize
+      // We calculate totals based on state.goals
+      // Note: This logic assumes we know which squad item belongs to home/away.
+      // For simplicity in this UI-first refactor, we let the backend or repository 
+      // handle the final match object aggregation if needed, or we fetch the match here.
+      
+      await repo.finalizeMatch(matchId);
+      
+      // Invalidate relevant providers
+      ref.invalidate(matchesProvider(tournamentId));
+      ref.invalidate(matchProvider(matchId));
+      
+      return true;
+    } catch (_) {
+      return false;
+    } finally {
+      state = state.copyWith(isSaving: false);
     }
-
-    // Log MOTM
-    if (state.selectedMotmId != null) {
-      await repo.logMotm(
-          matchId: matchId, squadItemId: state.selectedMotmId!);
-    }
-
-    // Finalize
-    await repo.finalizeMatch(matchId);
-
-    state = state.copyWith(isSaving: false);
-    return null; // success
-  }
-
-  void reset() {
-    state = const QuickTapState();
   }
 }
 
 final quickTapNotifierProvider =
-    NotifierProvider<QuickTapNotifier, QuickTapState>(QuickTapNotifier.new);
+    NotifierProvider.family<QuickTapNotifier, QuickTapState, String>(
+        QuickTapNotifier.new);

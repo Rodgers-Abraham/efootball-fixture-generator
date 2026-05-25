@@ -207,16 +207,14 @@ class TournamentRemoteDatasourceImpl implements TournamentRemoteDatasource {
         .update({
           'home_score': homeScore,
           'away_score': awayScore,
-          if (homePossession != null) 'home_possession': homePossession,
-          if (awayPossession != null) 'away_possession': awayPossession,
-          if (homeShots != null) 'home_shots': homeShots,
-          if (awayShots != null) 'away_shots': awayShots,
-          if (homeShotsOnTarget != null)
-            'home_shots_on_target': homeShotsOnTarget,
-          if (awayShotsOnTarget != null)
-            'away_shots_on_target': awayShotsOnTarget,
-          if (homeFouls != null) 'home_fouls': homeFouls,
-          if (awayFouls != null) 'away_fouls': awayFouls,
+          'home_possession': ?homePossession,
+          'away_possession': ?awayPossession,
+          'home_shots': ?homeShots,
+          'away_shots': ?awayShots,
+          'home_shots_on_target': ?homeShotsOnTarget,
+          'away_shots_on_target': ?awayShotsOnTarget,
+          'home_fouls': ?homeFouls,
+          'away_fouls': ?awayFouls,
           'status': AppConstants.matchCompleted,
           'played_at': DateTime.now().toIso8601String(),
         })

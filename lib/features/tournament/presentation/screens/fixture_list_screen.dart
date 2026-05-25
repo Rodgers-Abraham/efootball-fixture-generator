@@ -138,7 +138,7 @@ class _FixtureListScreenState extends ConsumerState<FixtureListScreen> {
               );
             },
             loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
+            error: (_, _) => const SizedBox.shrink(),
           ),
           Expanded(
             child: bracketAsync.when(

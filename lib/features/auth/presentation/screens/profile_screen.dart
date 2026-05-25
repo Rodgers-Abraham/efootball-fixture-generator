@@ -317,7 +317,7 @@ class _ViewBody extends ConsumerWidget {
                       width: 20, height: 20, 
                       child: CircularProgressIndicator(strokeWidth: 2)
                     ),
-                    error: (_, __) => const Text('0'),
+                    error: (_, _) => const Text('0'),
                   ),
                   const Text(
                     'Tournament Victories',

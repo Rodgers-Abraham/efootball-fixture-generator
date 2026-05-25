@@ -90,3 +90,10 @@ class UserSquadNotifier extends AsyncNotifier<List<SquadItemEntity>> {
     );
   }
 }
+
+/// Provider to fetch any specific user's squad (used in Tactical Grid & Public Profiles)
+final matchSquadProvider = FutureProvider.family<List<SquadItemEntity>, String>((ref, userId) async {
+  final repo = ref.watch(squadRepositoryProvider);
+  final result = await repo.getUserSquad(userId);
+  return result.fold((_) => [], (items) => items);
+});

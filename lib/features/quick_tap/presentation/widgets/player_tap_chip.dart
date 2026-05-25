@@ -45,7 +45,7 @@ class PlayerTapChip extends StatelessWidget {
             color: isMotmSelected
                 ? const Color(0xFFFFD700)
                 : active
-                    ? AppColors.accentNeon
+                    ? AppColors.accentVolt
                     : AppColors.border,
             width: active ? 1.5 : 1,
           ),
@@ -54,7 +54,7 @@ class PlayerTapChip extends StatelessWidget {
                   BoxShadow(
                     color: isMotmSelected
                         ? const Color(0xFFFFD700).withValues(alpha: 0.3)
-                        : AppColors.accentNeon.withValues(alpha: 0.25),
+                        : AppColors.accentVolt.withValues(alpha: 0.25),
                     blurRadius: 10,
                     spreadRadius: 0,
                   )
@@ -93,7 +93,7 @@ class PlayerTapChip extends StatelessWidget {
                     child: Container(
                       width: 18,
                       height: 18,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Color(0xFFFFD700),
                         shape: BoxShape.circle,
                       ),

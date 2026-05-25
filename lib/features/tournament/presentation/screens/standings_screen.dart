@@ -201,7 +201,7 @@ class _StandingsRow extends StatelessWidget {
             _StatCell(
               '${entry.points}',
               40,
-              color: AppColors.accentNeon,
+              color: AppColors.accentVolt,
               bold: true,
             ),
           ],
