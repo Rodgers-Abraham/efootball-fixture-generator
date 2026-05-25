@@ -10,34 +10,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Check out the repository code
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # 2. Set up Java Environment (required for Android builds)
     - name: Set up Java
       uses: actions/setup-java@v4
       with:
         distribution: 'zulu'
         java-version: '17'
 
-    # 3. Set up Flutter Environment
     - name: Set up Flutter
       uses: subosito/flutter-action@v2
       with:
         channel: 'stable'
-        # Optional: Specify your exact Flutter version here if needed, e.g.:
-        # flutter-version: '3.19.0'
+        cache: true
 
-    # 4. Get Flutter dependencies
+    - name: Create .env file
+      run: |
+        echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+        echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
     - name: Install Dependencies
       run: flutter pub get
 
-    # 5. Build the Release APK
     - name: Build APK
       run: flutter build apk --release
 
-    # 6. Upload the finished APK so you can download it from GitHub
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
