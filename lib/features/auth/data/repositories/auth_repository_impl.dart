@@ -129,8 +129,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, Unit>> sendFriendRequest(String toUserId) async {
     try {
       final user = await _datasource.getCurrentUser();
-      if (user == null)
+      if (user == null) {
         return Left(const Failure.auth(message: 'Not logged in'));
+      }
       await _datasource.sendFriendRequest(user.id, toUserId);
       return const Right(unit);
     } on Exception catch (e) {
@@ -164,8 +165,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, List<UserEntity>>> getFriends() async {
     try {
       final user = await _datasource.getCurrentUser();
-      if (user == null)
+      if (user == null) {
         return Left(const Failure.auth(message: 'Not logged in'));
+      }
       final models = await _datasource.getFriends(user.id);
       return Right(models.map((m) => m.toEntity()).toList());
     } on Exception catch (e) {
@@ -178,8 +180,9 @@ class AuthRepositoryImpl implements AuthRepository {
   getPendingRequests() async {
     try {
       final user = await _datasource.getCurrentUser();
-      if (user == null)
+      if (user == null) {
         return Left(const Failure.auth(message: 'Not logged in'));
+      }
       final list = await _datasource.getPendingRequests(user.id);
       final results = list.map((item) {
         final id = item['id'] as String;

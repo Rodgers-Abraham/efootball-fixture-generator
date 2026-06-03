@@ -99,10 +99,11 @@ class _FixtureListScreenState extends ConsumerState<FixtureListScreen> {
         .startTournament(widget.tournamentId);
     if (!mounted) return;
     setState(() => _starting = false);
-    if (!success)
+    if (!success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to start tournament.')),
       );
+    }
   }
 
   @override
@@ -143,8 +144,9 @@ class _FixtureListScreenState extends ConsumerState<FixtureListScreen> {
         children: [
           tournamentAsync.when(
             data: (t) {
-              if (t == null || t.inviteCode == null || t.status == 'completed')
+              if (t == null || t.inviteCode == null || t.status == 'completed') {
                 return const SizedBox.shrink();
+              }
               return Container(
                 width: double.infinity,
                 margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -304,13 +306,14 @@ class _FixtureListScreenState extends ConsumerState<FixtureListScreen> {
                     ),
                   );
                 }
-                if (bracket == null || bracket.rounds.isEmpty)
+                if (bracket == null || bracket.rounds.isEmpty) {
                   return const Center(
                     child: Text(
                       'No fixtures generated yet.',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                   );
+                }
                 if (bracket.format == AppConstants.formatRoundRobin) {
                   return _RoundRobinSchedule(
                     tournamentId: widget.tournamentId,

@@ -47,8 +47,9 @@ class QuickTapDashboardScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (match) {
-          if (match == null)
+          if (match == null) {
             return const Center(child: Text('Match not found'));
+          }
 
           return CustomScrollView(
             slivers: [

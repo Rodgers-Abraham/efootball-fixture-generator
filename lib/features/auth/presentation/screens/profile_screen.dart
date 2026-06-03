@@ -299,7 +299,7 @@ class _SocialTab extends ConsumerWidget {
         const SizedBox(height: 12),
         friendsAsync.when(
           data: (friends) {
-            if (friends.isEmpty)
+            if (friends.isEmpty) {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(24),
@@ -309,6 +309,7 @@ class _SocialTab extends ConsumerWidget {
                   ),
                 ),
               );
+            }
             return Column(
               children: friends.map((f) => _FriendTile(user: f)).toList(),
             );
