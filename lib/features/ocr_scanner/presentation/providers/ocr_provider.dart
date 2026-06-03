@@ -1,14 +1,15 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/data/datasources/ocr_local_datasource.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/data/repositories/ocr_repository_impl.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/domain/entities/match_stats_entity.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/domain/repositories/ocr_repository.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/ocr_scanner/data/datasources/ocr_local_datasource.dart';
+import 'package:eFootClash/features/ocr_scanner/data/repositories/ocr_repository_impl.dart';
+import 'package:eFootClash/features/ocr_scanner/domain/entities/match_stats_entity.dart';
+import 'package:eFootClash/features/ocr_scanner/domain/repositories/ocr_repository.dart';
 
 // ── Infrastructure ─────────────────────────────────────────────
 final ocrLocalDatasourceProvider = Provider<OcrLocalDatasource>(
-    (_) => OcrLocalDatasource());
+  (_) => OcrLocalDatasource(),
+);
 
 final ocrRepositoryProvider = Provider<OcrRepository>((ref) {
   final ds = ref.watch(ocrLocalDatasourceProvider);
@@ -41,8 +42,7 @@ class OcrScanState {
     return OcrScanState(
       selectedImage: clearImage ? null : selectedImage ?? this.selectedImage,
       stats: clearStats ? null : stats ?? this.stats,
-      errorMessage:
-          clearError ? null : errorMessage ?? this.errorMessage,
+      errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
       isScanning: isScanning ?? this.isScanning,
     );
   }
@@ -90,5 +90,6 @@ class OcrNotifier extends Notifier<OcrScanState> {
   }
 }
 
-final ocrNotifierProvider =
-    NotifierProvider<OcrNotifier, OcrScanState>(OcrNotifier.new);
+final ocrNotifierProvider = NotifierProvider<OcrNotifier, OcrScanState>(
+  OcrNotifier.new,
+);

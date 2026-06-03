@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/auth/presentation/providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -30,7 +30,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    final error = await ref.read(authNotifierProvider.notifier).signIn(
+    final error = await ref
+        .read(authNotifierProvider.notifier)
+        .signIn(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
@@ -39,9 +41,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = false);
 
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     } else {
       context.go(AppConstants.routeHome);
     }

@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/bracket_entity.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/match_entity.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/tournament_entity.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/tournament/domain/entities/bracket_entity.dart';
+import 'package:eFootClash/features/tournament/domain/entities/match_entity.dart';
+import 'package:eFootClash/features/tournament/domain/entities/tournament_entity.dart';
 
 abstract class TournamentRepository {
   // Tournaments
@@ -29,7 +29,8 @@ abstract class TournamentRepository {
   Future<Either<Failure, List<MatchEntity>>> getMatches(String tournamentId);
   Future<Either<Failure, MatchEntity>> getMatch(String matchId);
   Future<Either<Failure, List<MatchEntity>>> saveMatches(
-      List<MatchEntity> matches);
+    List<MatchEntity> matches,
+  );
   Future<Either<Failure, MatchEntity>> updateMatchResult({
     required String matchId,
     required int homeScore,

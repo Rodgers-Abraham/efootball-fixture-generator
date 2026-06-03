@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/player_card_entity.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/squad/domain/entities/player_card_entity.dart';
 
 /// Vertical card chip for squad grid slots.
 /// Image on top, name + type badge below.
@@ -37,9 +37,12 @@ class PlayerCardChip extends StatelessWidget {
             width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(
-                  color: AppColors.accentVolt.withValues(alpha: 0.3),
-                  blurRadius: 8)]
+              ? [
+                  BoxShadow(
+                    color: AppColors.accentVolt.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                  ),
+                ]
               : null,
         ),
         child: Stack(
@@ -51,13 +54,16 @@ class PlayerCardChip extends StatelessWidget {
                 // Card image - Reduced height to 64 to prevent overflows
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(9)),
+                    top: Radius.circular(9),
+                  ),
                   child: _buildImage(),
                 ),
                 // Name + badge row - reduced padding
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 4, vertical: 2),
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -79,12 +85,15 @@ class PlayerCardChip extends StatelessWidget {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 1),
+                              horizontal: 4,
+                              vertical: 1,
+                            ),
                             decoration: BoxDecoration(
                               color: badgeColor.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(3),
                               border: Border.all(
-                                  color: badgeColor.withValues(alpha: 0.6)),
+                                color: badgeColor.withValues(alpha: 0.6),
+                              ),
                             ),
                             child: Text(
                               typeLabel,
@@ -124,8 +133,11 @@ class PlayerCardChip extends StatelessWidget {
                       color: AppColors.background.withValues(alpha: 0.8),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.close,
-                        size: 10, color: AppColors.textSecondary),
+                    child: const Icon(
+                      Icons.close,
+                      size: 10,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ),
               ),
@@ -143,7 +155,7 @@ class PlayerCardChip extends StatelessWidget {
         child: Image.network(
           url,
           width: double.infinity,
-          height: 64, 
+          height: 64,
           fit: BoxFit.contain, // Changed from cover to show the full card
           loadingBuilder: (_, child, progress) =>
               progress == null ? child : _imagePlaceholder(),
@@ -160,8 +172,7 @@ class PlayerCardChip extends StatelessWidget {
       width: double.infinity,
       height: 64, // Reduced from 72
       color: AppColors.primary.withValues(alpha: 0.1),
-      child: const Icon(Icons.person,
-          color: AppColors.textDisabled, size: 32),
+      child: const Icon(Icons.person, color: AppColors.textDisabled, size: 32),
     );
   }
 }

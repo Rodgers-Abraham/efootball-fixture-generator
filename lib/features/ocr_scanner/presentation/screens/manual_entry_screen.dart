@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/domain/entities/match_stats_entity.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/presentation/providers/ocr_provider.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/ocr_scanner/domain/entities/match_stats_entity.dart';
+import 'package:eFootClash/features/ocr_scanner/presentation/providers/ocr_provider.dart';
 
 class ManualEntryScreen extends ConsumerStatefulWidget {
   const ManualEntryScreen({super.key});
@@ -29,9 +29,16 @@ class _ManualEntryScreenState extends ConsumerState<ManualEntryScreen> {
   @override
   void dispose() {
     for (final c in [
-      _homeScoreCtrl, _awayScoreCtrl, _homePossCtrl, _awayPossCtrl,
-      _homeShotsCtrl, _awayShotsCtrl, _homeSOTCtrl, _awaySOTCtrl,
-      _homeFoulsCtrl, _awayFoulsCtrl,
+      _homeScoreCtrl,
+      _awayScoreCtrl,
+      _homePossCtrl,
+      _awayPossCtrl,
+      _homeShotsCtrl,
+      _awayShotsCtrl,
+      _homeSOTCtrl,
+      _awaySOTCtrl,
+      _homeFoulsCtrl,
+      _awayFoulsCtrl,
     ]) {
       c.dispose();
     }
@@ -168,9 +175,7 @@ class _ManualEntryScreenState extends ConsumerState<ManualEntryScreen> {
             textAlign: TextAlign.center,
             decoration: InputDecoration(labelText: leftLabel),
             validator: required
-                ? (v) => (v == null || v.isEmpty)
-                    ? 'Required'
-                    : null
+                ? (v) => (v == null || v.isEmpty) ? 'Required' : null
                 : null,
           ),
         ),
@@ -188,9 +193,7 @@ class _ManualEntryScreenState extends ConsumerState<ManualEntryScreen> {
             textAlign: TextAlign.center,
             decoration: InputDecoration(labelText: rightLabel),
             validator: required
-                ? (v) => (v == null || v.isEmpty)
-                    ? 'Required'
-                    : null
+                ? (v) => (v == null || v.isEmpty) ? 'Required' : null
                 : null,
           ),
         ),

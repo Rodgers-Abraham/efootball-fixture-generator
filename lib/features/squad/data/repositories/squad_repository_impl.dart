@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/squad/data/datasources/squad_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/player_card_entity.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/repositories/squad_repository.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/squad/data/datasources/squad_remote_datasource.dart';
+import 'package:eFootClash/features/squad/domain/entities/player_card_entity.dart';
+import 'package:eFootClash/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:eFootClash/features/squad/domain/repositories/squad_repository.dart';
 
 class SquadRepositoryImpl implements SquadRepository {
   final SquadRemoteDatasource _datasource;
@@ -11,7 +11,9 @@ class SquadRepositoryImpl implements SquadRepository {
   SquadRepositoryImpl(this._datasource);
 
   @override
-  Future<Either<Failure, List<PlayerCardEntity>>> searchCards(String query) async {
+  Future<Either<Failure, List<PlayerCardEntity>>> searchCards(
+    String query,
+  ) async {
     try {
       final models = await _datasource.searchCards(query);
       return Right(models.map((m) => m.toEntity()).toList());
@@ -21,7 +23,9 @@ class SquadRepositoryImpl implements SquadRepository {
   }
 
   @override
-  Future<Either<Failure, List<SquadItemEntity>>> getUserSquad(String userId) async {
+  Future<Either<Failure, List<SquadItemEntity>>> getUserSquad(
+    String userId,
+  ) async {
     try {
       final models = await _datasource.getUserSquad(userId);
       return Right(models.map((m) => m.toEntity()).toList());

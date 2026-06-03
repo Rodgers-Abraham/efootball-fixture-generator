@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:ui' show Rect;
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/domain/entities/match_stats_entity.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/ocr_scanner/domain/entities/match_stats_entity.dart';
 
 class OcrLocalDatasource {
   /// Scans [imageFile] with ML Kit text recognition and extracts match stats.
@@ -25,10 +25,9 @@ class OcrLocalDatasource {
       for (final line in block.lines) {
         for (final element in line.elements) {
           // Fixed unnecessary_null_comparison and unnecessary_non_null_assertion
-          allBlocks.add(_TextBlock(
-            text: element.text,
-            rect: element.boundingBox,
-          ));
+          allBlocks.add(
+            _TextBlock(text: element.text, rect: element.boundingBox),
+          );
         }
       }
     }
@@ -84,8 +83,7 @@ class OcrLocalDatasource {
             // Try to find numbers on the same or adjacent lines
             for (int j = i - 2; j <= i + 2; j++) {
               if (j < 0 || j >= allLines.length) continue;
-              final matches =
-                  RegExp(r'\b(\d+)%?\b').allMatches(allLines[j]);
+              final matches = RegExp(r'\b(\d+)%?\b').allMatches(allLines[j]);
               for (final m in matches) {
                 final val = int.tryParse(m.group(1)!);
                 if (val != null && val <= 100) nums.add(val);
@@ -103,23 +101,21 @@ class OcrLocalDatasource {
       final anchorX = anchor.rect.center.dx;
 
       // Find numeric blocks near the anchor's Y
-      final nearbyNums = allBlocks
-          .where((b) {
-            if (b == anchor) return false;
-            final num = int.tryParse(b.text.replaceAll('%', ''));
-            return num != null &&
-                (b.rect.center.dy - anchorY).abs() < 40;
-          })
-          .toList()
-        ..sort((a, b) => a.rect.center.dx.compareTo(b.rect.center.dx));
+      final nearbyNums = allBlocks.where((b) {
+        if (b == anchor) return false;
+        final num = int.tryParse(b.text.replaceAll('%', ''));
+        return num != null && (b.rect.center.dy - anchorY).abs() < 40;
+      }).toList()..sort((a, b) => a.rect.center.dx.compareTo(b.rect.center.dx));
 
       if (nearbyNums.isEmpty) return [null, null];
 
       // Separate left (home) and right (away) of anchor
-      final leftNums =
-          nearbyNums.where((b) => b.rect.center.dx < anchorX).toList();
-      final rightNums =
-          nearbyNums.where((b) => b.rect.center.dx > anchorX).toList();
+      final leftNums = nearbyNums
+          .where((b) => b.rect.center.dx < anchorX)
+          .toList();
+      final rightNums = nearbyNums
+          .where((b) => b.rect.center.dx > anchorX)
+          .toList();
 
       int? left = leftNums.isNotEmpty
           ? int.tryParse(leftNums.last.text.replaceAll('%', ''))

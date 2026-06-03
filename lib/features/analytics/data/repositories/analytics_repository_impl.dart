@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/analytics/data/datasources/analytics_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/analytics/domain/entities/leaderboard_entry_entity.dart';
-import 'package:efootball_fixture_generator/features/analytics/domain/repositories/analytics_repository.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/analytics/data/datasources/analytics_remote_datasource.dart';
+import 'package:eFootClash/features/analytics/domain/entities/leaderboard_entry_entity.dart';
+import 'package:eFootClash/features/analytics/domain/repositories/analytics_repository.dart';
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
   final AnalyticsRemoteDatasource _datasource;
@@ -11,7 +11,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Either<Failure, List<LeaderboardEntryEntity>>> getGoldenBoot(
-      String tournamentId) async {
+    String tournamentId,
+  ) async {
     try {
       final entries = await _datasource.getGoldenBoot(tournamentId);
       return Right(entries);
@@ -22,7 +23,8 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
 
   @override
   Future<Either<Failure, List<LeaderboardEntryEntity>>> getMotmLeaderboard(
-      String tournamentId) async {
+    String tournamentId,
+  ) async {
     try {
       final entries = await _datasource.getMotmLeaderboard(tournamentId);
       return Right(entries);

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 /// The analytics tab shows a list of tournaments to pick one for analytics.
 class AnalyticsTab extends ConsumerWidget {
@@ -18,8 +18,10 @@ class AnalyticsTab extends ConsumerWidget {
       body: tournamentsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
-          child: Text('Error: $e',
-              style: const TextStyle(color: AppColors.error)),
+          child: Text(
+            'Error: $e',
+            style: const TextStyle(color: AppColors.error),
+          ),
         ),
         data: (tournaments) {
           if (tournaments.isEmpty) {
@@ -54,8 +56,10 @@ class AnalyticsTab extends ConsumerWidget {
                           color: AppColors.primary.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.bar_chart,
-                            color: AppColors.primary),
+                        child: const Icon(
+                          Icons.bar_chart,
+                          color: AppColors.primary,
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -68,8 +72,10 @@ class AnalyticsTab extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const Icon(Icons.chevron_right,
-                          color: AppColors.textSecondary),
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.textSecondary,
+                      ),
                     ],
                   ),
                 ),

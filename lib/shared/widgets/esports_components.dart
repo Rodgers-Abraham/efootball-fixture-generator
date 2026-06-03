@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
 import 'package:shimmer/shimmer.dart';
 
 /// ── High Performance Esports Player Card ──────────────────────────
@@ -32,13 +32,17 @@ class EsportsPlayerCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isMotm ? AppColors.trophyGold : (glowColor ?? AppColors.border),
+            color: isMotm
+                ? AppColors.trophyGold
+                : (glowColor ?? AppColors.border),
             width: isMotm ? 2 : 1,
           ),
           boxShadow: [
             if (glowColor != null || isMotm)
               BoxShadow(
-                color: (glowColor ?? AppColors.trophyGold).withValues(alpha: 0.4),
+                color: (glowColor ?? AppColors.trophyGold).withValues(
+                  alpha: 0.4,
+                ),
                 blurRadius: 12,
                 spreadRadius: 2,
               ),
@@ -75,7 +79,10 @@ class EsportsPlayerCard extends StatelessWidget {
                 left: 4,
                 right: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(20),
@@ -127,7 +134,9 @@ class EsportsPlayerCard extends StatelessWidget {
     if (imageUrl == null || imageUrl!.isEmpty) {
       return Container(
         color: AppColors.surface,
-        child: const Center(child: Icon(Icons.person, color: AppColors.textDisabled)),
+        child: const Center(
+          child: Icon(Icons.person, color: AppColors.textDisabled),
+        ),
       );
     }
     return CachedNetworkImage(
@@ -219,9 +228,24 @@ class LiveMatchTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _TeamInfo(name: homeName, tag: homeTag, align: CrossAxisAlignment.start),
-                const Text('VS', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w900, fontSize: 18)),
-                _TeamInfo(name: awayName, tag: awayTag, align: CrossAxisAlignment.end),
+                _TeamInfo(
+                  name: homeName,
+                  tag: homeTag,
+                  align: CrossAxisAlignment.start,
+                ),
+                const Text(
+                  'VS',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 18,
+                  ),
+                ),
+                _TeamInfo(
+                  name: awayName,
+                  tag: awayTag,
+                  align: CrossAxisAlignment.end,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -238,8 +262,22 @@ class LiveMatchTile extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('${(possession * 100).toInt()}%', style: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.w800)),
-                Text('${((1 - possession) * 100).toInt()}%', style: const TextStyle(color: AppColors.secondary, fontSize: 11, fontWeight: FontWeight.w800)),
+                Text(
+                  '${(possession * 100).toInt()}%',
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  '${((1 - possession) * 100).toInt()}%',
+                  style: const TextStyle(
+                    color: AppColors.secondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
               ],
             ),
           ],
@@ -261,8 +299,23 @@ class _TeamInfo extends StatelessWidget {
     return Column(
       crossAxisAlignment: align,
       children: [
-        Text(tag, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: 1)),
-        Text(name, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+        Text(
+          tag,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1,
+          ),
+        ),
+        Text(
+          name,
+          style: const TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }

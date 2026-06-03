@@ -1,5 +1,5 @@
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/match_entity.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/tournament/domain/entities/match_entity.dart';
 
 /// Pure Dart bracket generation — no external dependencies.
 class GenerateFixturesUseCase {
@@ -26,7 +26,9 @@ class GenerateFixturesUseCase {
 
   // ── Single elimination ─────────────────────────────────────────
   List<List<MatchEntity>> _singleElimination(
-      String tournamentId, List<String> participants) {
+    String tournamentId,
+    List<String> participants,
+  ) {
     final seeded = List<String?>.from(participants);
 
     // Pad to next power of two with null (bye)
@@ -48,15 +50,17 @@ class GenerateFixturesUseCase {
         final away = current[i + 1];
         final matchNum = round.length + 1;
 
-        round.add(MatchEntity(
-          id: 'r${roundNum}_m$matchNum',
-          tournamentId: tournamentId,
-          round: roundNum,
-          matchNumber: matchNum,
-          homeUserId: home,
-          awayUserId: away,
-          status: AppConstants.matchScheduled,
-        ));
+        round.add(
+          MatchEntity(
+            id: 'r${roundNum}_m$matchNum',
+            tournamentId: tournamentId,
+            round: roundNum,
+            matchNumber: matchNum,
+            homeUserId: home,
+            awayUserId: away,
+            status: AppConstants.matchScheduled,
+          ),
+        );
 
         // Winner placeholder (null means TBD)
         next.add(null);
@@ -72,22 +76,26 @@ class GenerateFixturesUseCase {
 
   // ── Double elimination ─────────────────────────────────────────
   List<List<MatchEntity>> _doubleElimination(
-      String tournamentId, List<String> participants) {
+    String tournamentId,
+    List<String> participants,
+  ) {
     // Generate winners bracket then add a losers bracket skeleton
     final winnerRounds = _singleElimination(tournamentId, participants);
     final loserMatches = <MatchEntity>[];
 
     // Losers bracket: one match per round of the winners bracket (simplified)
     for (int r = 0; r < winnerRounds.length - 1; r++) {
-      loserMatches.add(MatchEntity(
-        id: 'losers_r${r + 1}_m1',
-        tournamentId: tournamentId,
-        round: r + 1,
-        matchNumber: winnerRounds[r].length + 1,
-        homeUserId: null,
-        awayUserId: null,
-        status: AppConstants.matchScheduled,
-      ));
+      loserMatches.add(
+        MatchEntity(
+          id: 'losers_r${r + 1}_m1',
+          tournamentId: tournamentId,
+          round: r + 1,
+          matchNumber: winnerRounds[r].length + 1,
+          homeUserId: null,
+          awayUserId: null,
+          status: AppConstants.matchScheduled,
+        ),
+      );
     }
 
     // Grand final
@@ -111,7 +119,9 @@ class GenerateFixturesUseCase {
 
   // ── Round robin ────────────────────────────────────────────────
   List<List<MatchEntity>> _roundRobin(
-      String tournamentId, List<String> participants) {
+    String tournamentId,
+    List<String> participants,
+  ) {
     final n = participants.length;
     final list = List<String>.from(participants);
 
@@ -135,15 +145,17 @@ class GenerateFixturesUseCase {
 
         if (home == 'BYE' || away == 'BYE') continue;
 
-        round.add(MatchEntity(
-          id: 'rr_r${r + 1}_m${m + 1}',
-          tournamentId: tournamentId,
-          round: r + 1,
-          matchNumber: m + 1,
-          homeUserId: home,
-          awayUserId: away,
-          status: AppConstants.matchScheduled,
-        ));
+        round.add(
+          MatchEntity(
+            id: 'rr_r${r + 1}_m${m + 1}',
+            tournamentId: tournamentId,
+            round: r + 1,
+            matchNumber: m + 1,
+            homeUserId: home,
+            awayUserId: away,
+            status: AppConstants.matchScheduled,
+          ),
+        );
       }
 
       rounds.add(round);

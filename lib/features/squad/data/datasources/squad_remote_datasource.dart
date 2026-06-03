@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/squad/data/models/player_card_model.dart';
-import 'package:efootball_fixture_generator/features/squad/data/models/squad_item_model.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/squad/data/models/player_card_model.dart';
+import 'package:eFootClash/features/squad/data/models/squad_item_model.dart';
 
 abstract class SquadRemoteDatasource {
   Future<List<PlayerCardModel>> searchCards(String query);
@@ -87,9 +87,9 @@ class SquadRemoteDatasourceImpl implements SquadRemoteDatasource {
     required String position,
     required int slotIndex,
   }) async {
-    await _client.from(AppConstants.squadItemsTable).update({
-      'position': position,
-      'slot_index': slotIndex,
-    }).eq('squad_item_id', squadItemId);
+    await _client
+        .from(AppConstants.squadItemsTable)
+        .update({'position': position, 'slot_index': slotIndex})
+        .eq('squad_item_id', squadItemId);
   }
 }

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/auth/presentation/providers/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -38,7 +38,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _loading = true);
 
-    final error = await ref.read(authNotifierProvider.notifier).signUp(
+    final error = await ref
+        .read(authNotifierProvider.notifier)
+        .signUp(
           username: _usernameController.text.trim(),
           teamTag: _teamTagController.text.trim().toUpperCase(),
           email: _emailController.text.trim(),
@@ -49,9 +51,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _loading = false);
 
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     } else {
       context.go(AppConstants.routeHome);
     }
@@ -88,7 +90,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: 8),
                 const Text(
                   'Set up your player profile to start competing.',
-                  style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 36),
 
@@ -126,8 +131,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
                     TextInputFormatter.withFunction((old, newVal) {
                       return newVal.copyWith(
-                          text: newVal.text.toUpperCase(),
-                          selection: newVal.selection);
+                        text: newVal.text.toUpperCase(),
+                        selection: newVal.selection,
+                      );
                     }),
                   ],
                   decoration: const InputDecoration(
@@ -158,7 +164,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     prefixIcon: Icon(Icons.email_outlined),
                   ),
                   validator: (v) {
-                    if (v == null || v.trim().isEmpty) return 'Email is required';
+                    if (v == null || v.trim().isEmpty)
+                      return 'Email is required';
                     if (!v.contains('@')) return 'Enter a valid email';
                     return null;
                   },
@@ -174,9 +181,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword
-                          ? Icons.visibility_off
-                          : Icons.visibility),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
                     ),
@@ -198,9 +207,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     labelText: 'Confirm Password',
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscureConfirm
-                          ? Icons.visibility_off
-                          : Icons.visibility),
+                      icon: Icon(
+                        _obscureConfirm
+                            ? Icons.visibility_off
+                            : Icons.visibility,
+                      ),
                       onPressed: () =>
                           setState(() => _obscureConfirm = !_obscureConfirm),
                     ),

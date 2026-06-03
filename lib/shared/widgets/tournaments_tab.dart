@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/tournament_entity.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/widgets/join_code_dialog.dart';
-import 'package:efootball_fixture_generator/shared/widgets/login_prompt.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/auth/presentation/providers/auth_provider.dart';
+import 'package:eFootClash/features/tournament/domain/entities/tournament_entity.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/features/tournament/presentation/widgets/join_code_dialog.dart';
+import 'package:eFootClash/shared/widgets/login_prompt.dart';
 
 class TournamentsTab extends ConsumerWidget {
   const TournamentsTab({super.key});
@@ -52,11 +52,12 @@ class TournamentsTab extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.error_outline,
-                  color: AppColors.error, size: 48),
+              const Icon(Icons.error_outline, color: AppColors.error, size: 48),
               const SizedBox(height: 12),
-              Text('Error: $e',
-                  style: const TextStyle(color: AppColors.textSecondary)),
+              Text(
+                'Error: $e',
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.invalidate(tournamentListProvider),
@@ -71,8 +72,11 @@ class TournamentsTab extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.emoji_events_outlined,
-                      color: AppColors.textDisabled, size: 72),
+                  const Icon(
+                    Icons.emoji_events_outlined,
+                    color: AppColors.textDisabled,
+                    size: 72,
+                  ),
                   const SizedBox(height: 16),
                   const Text(
                     'No tournaments yet.',
@@ -111,11 +115,11 @@ class TournamentsTab extends ConsumerWidget {
               itemCount: tournaments.length,
               itemBuilder: (_, i) => _TournamentCard(
                 tournament: tournaments[i],
-                onTap: () => context
-                    .push('/tournament/${tournaments[i].id}'),
+                onTap: () => context.push('/tournament/${tournaments[i].id}'),
                 onDelete: () {
                   if (isLoggedIn) {
-                    ref.read(tournamentListProvider.notifier)
+                    ref
+                        .read(tournamentListProvider.notifier)
                         .deleteTournament(tournaments[i].id);
                   } else {
                     showLoginPrompt(context, 'delete tournaments');
@@ -242,8 +246,11 @@ class _TournamentCard extends StatelessWidget {
 
                 // Delete Button
                 IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: AppColors.textDisabled, size: 20),
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.textDisabled,
+                    size: 20,
+                  ),
                   onPressed: () => _confirmDelete(context),
                   visualDensity: VisualDensity.compact,
                 ),
@@ -252,7 +259,7 @@ class _TournamentCard extends StatelessWidget {
             const SizedBox(height: 16),
             const Divider(height: 1, color: AppColors.border),
             const SizedBox(height: 12),
-            
+
             // Footer Info
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -260,7 +267,11 @@ class _TournamentCard extends StatelessWidget {
                 Flexible(
                   child: Row(
                     children: [
-                      const Icon(Icons.format_list_bulleted, size: 14, color: AppColors.textSecondary),
+                      const Icon(
+                        Icons.format_list_bulleted,
+                        size: 14,
+                        color: AppColors.textSecondary,
+                      ),
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
@@ -280,7 +291,11 @@ class _TournamentCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Row(
                   children: [
-                    const Icon(Icons.people_outline, size: 14, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.people_outline,
+                      size: 14,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       '${tournament.participantIds.length} PLAYERS',
@@ -313,8 +328,10 @@ class _TournamentCard extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('DELETE',
-                style: TextStyle(color: AppColors.error)),
+            child: const Text(
+              'DELETE',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),

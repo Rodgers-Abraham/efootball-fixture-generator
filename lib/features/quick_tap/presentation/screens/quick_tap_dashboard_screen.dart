@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/presentation/providers/quick_tap_provider.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
-import 'package:efootball_fixture_generator/features/squad/presentation/providers/squad_provider.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
-import 'package:efootball_fixture_generator/shared/widgets/esports_components.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/quick_tap/presentation/providers/quick_tap_provider.dart';
+import 'package:eFootClash/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:eFootClash/features/squad/presentation/providers/squad_provider.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/shared/widgets/esports_components.dart';
 
 class QuickTapDashboardScreen extends ConsumerWidget {
   final String tournamentId;
@@ -20,7 +20,7 @@ class QuickTapDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final matchAsync = ref.watch(matchProvider(matchId));
-    
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -28,10 +28,18 @@ class QuickTapDashboardScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () async {
-              final success = await ref.read(quickTapNotifierProvider(matchId).notifier).saveResults(tournamentId);
+              final success = await ref
+                  .read(quickTapNotifierProvider(matchId).notifier)
+                  .saveResults(tournamentId);
               if (success && context.mounted) Navigator.pop(context);
             },
-            child: const Text('FINALIZE', style: TextStyle(color: AppColors.accentVolt, fontWeight: FontWeight.w900)),
+            child: const Text(
+              'FINALIZE',
+              style: TextStyle(
+                color: AppColors.accentVolt,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
           ),
         ],
       ),
@@ -39,12 +47,16 @@ class QuickTapDashboardScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (match) {
-          if (match == null) return const Center(child: Text('Match not found'));
+          if (match == null)
+            return const Center(child: Text('Match not found'));
 
           return CustomScrollView(
             slivers: [
               // ── Home Squad Segment ────────────────────────────────
-              _SliverSectionHeader(title: '${match.homeUsername} (HOME)', color: AppColors.primary),
+              _SliverSectionHeader(
+                title: '${match.homeUsername} (HOME)',
+                color: AppColors.primary,
+              ),
               _TacticalGrid(
                 matchId: matchId,
                 userId: match.homeUserId!,
@@ -52,13 +64,16 @@ class QuickTapDashboardScreen extends ConsumerWidget {
               ),
 
               // ── Away Squad Segment ────────────────────────────────
-              _SliverSectionHeader(title: '${match.awayUsername} (AWAY)', color: AppColors.secondary),
+              _SliverSectionHeader(
+                title: '${match.awayUsername} (AWAY)',
+                color: AppColors.secondary,
+              ),
               _TacticalGrid(
                 matchId: matchId,
                 userId: match.awayUserId!,
                 teamTag: match.awayTeamTag ?? 'AT',
               ),
-              
+
               const SliverToBoxAdapter(child: SizedBox(height: 40)),
             ],
           );
@@ -84,7 +99,12 @@ class _SliverSectionHeader extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               title.toUpperCase(),
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+              ),
             ),
           ],
         ),
@@ -98,14 +118,20 @@ class _TacticalGrid extends ConsumerWidget {
   final String userId;
   final String teamTag;
 
-  const _TacticalGrid({required this.matchId, required this.userId, required this.teamTag});
+  const _TacticalGrid({
+    required this.matchId,
+    required this.userId,
+    required this.teamTag,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final squadAsync = ref.watch(matchSquadProvider(userId));
 
     return squadAsync.when(
-      loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+      loading: () => const SliverToBoxAdapter(
+        child: Center(child: CircularProgressIndicator()),
+      ),
       error: (e, _) => SliverToBoxAdapter(child: Text('Error: $e')),
       data: (squad) {
         return SliverPadding(
@@ -117,18 +143,15 @@ class _TacticalGrid extends ConsumerWidget {
               crossAxisSpacing: 12,
               childAspectRatio: 0.72,
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                if (index >= squad.length) return const SizedBox.shrink();
-                final item = squad[index];
-                return _InteractiveCard(
-                  matchId: matchId,
-                  squadItem: item,
-                  teamTag: teamTag,
-                );
-              },
-              childCount: 16,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              if (index >= squad.length) return const SizedBox.shrink();
+              final item = squad[index];
+              return _InteractiveCard(
+                matchId: matchId,
+                squadItem: item,
+                teamTag: teamTag,
+              );
+            }, childCount: 16),
           ),
         );
       },
@@ -141,7 +164,11 @@ class _InteractiveCard extends ConsumerWidget {
   final SquadItemEntity squadItem;
   final String teamTag;
 
-  const _InteractiveCard({required this.matchId, required this.squadItem, required this.teamTag});
+  const _InteractiveCard({
+    required this.matchId,
+    required this.squadItem,
+    required this.teamTag,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -154,9 +181,13 @@ class _InteractiveCard extends ConsumerWidget {
       tween: Tween(begin: 1.0, end: goals > 0 ? 1.05 : 1.0),
       builder: (context, scale, child) {
         return GestureDetector(
-          onTap: () => ref.read(quickTapNotifierProvider(matchId).notifier).incrementGoal(squadItem.squadItemId),
+          onTap: () => ref
+              .read(quickTapNotifierProvider(matchId).notifier)
+              .incrementGoal(squadItem.squadItemId),
           onLongPress: () {
-            ref.read(quickTapNotifierProvider(matchId).notifier).setMotm(squadItem.squadItemId);
+            ref
+                .read(quickTapNotifierProvider(matchId).notifier)
+                .setMotm(squadItem.squadItemId);
             Feedback.forLongPress(context);
           },
           child: EsportsPlayerCard(

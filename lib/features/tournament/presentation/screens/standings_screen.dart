@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 class StandingsScreen extends ConsumerWidget {
   final String tournamentId;
@@ -33,8 +33,10 @@ class StandingsScreen extends ConsumerWidget {
       body: standingsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(
-          child: Text('Error: $e',
-              style: const TextStyle(color: AppColors.error)),
+          child: Text(
+            'Error: $e',
+            style: const TextStyle(color: AppColors.error),
+          ),
         ),
         data: (standings) {
           if (standings.isEmpty) {
@@ -124,10 +126,10 @@ class _StandingsRow extends StatelessWidget {
     final rankColor = rank == 1
         ? const Color(0xFFFFD700)
         : rank == 2
-            ? const Color(0xFFC0C0C0)
-            : rank == 3
-                ? const Color(0xFFCD7F32)
-                : AppColors.textSecondary;
+        ? const Color(0xFFC0C0C0)
+        : rank == 3
+        ? const Color(0xFFCD7F32)
+        : AppColors.textSecondary;
 
     return GestureDetector(
       onTap: () => context.push('/profile/${entry.userId}'),
@@ -195,8 +197,8 @@ class _StandingsRow extends StatelessWidget {
               color: entry.goalDifference > 0
                   ? AppColors.success
                   : entry.goalDifference < 0
-                      ? AppColors.error
-                      : AppColors.textSecondary,
+                  ? AppColors.error
+                  : AppColors.textSecondary,
             ),
             _StatCell(
               '${entry.points}',

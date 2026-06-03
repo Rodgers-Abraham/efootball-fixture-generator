@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/analytics/domain/entities/leaderboard_entry_entity.dart';
-import 'package:efootball_fixture_generator/features/analytics/presentation/providers/analytics_provider.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/analytics/domain/entities/leaderboard_entry_entity.dart';
+import 'package:eFootClash/features/analytics/presentation/providers/analytics_provider.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 class AnalyticsScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -33,8 +33,7 @@ class _AnalyticsScreenState extends ConsumerState<AnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final tournamentAsync =
-        ref.watch(tournamentProvider(widget.tournamentId));
+    final tournamentAsync = ref.watch(tournamentProvider(widget.tournamentId));
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -85,10 +84,7 @@ class _LeaderboardTab extends ConsumerWidget {
   final String tournamentId;
   final _LeaderboardMode mode;
 
-  const _LeaderboardTab({
-    required this.tournamentId,
-    required this.mode,
-  });
+  const _LeaderboardTab({required this.tournamentId, required this.mode});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -99,8 +95,10 @@ class _LeaderboardTab extends ConsumerWidget {
     return dataAsync.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(
-        child: Text('Error: $e',
-            style: const TextStyle(color: AppColors.error)),
+        child: Text(
+          'Error: $e',
+          style: const TextStyle(color: AppColors.error),
+        ),
       ),
       data: (entries) {
         if (entries.isEmpty) {
@@ -120,8 +118,7 @@ class _LeaderboardTab extends ConsumerWidget {
                   mode == _LeaderboardMode.golden
                       ? 'No goals recorded yet'
                       : 'No MOTM awards yet',
-                  style:
-                      const TextStyle(color: AppColors.textSecondary),
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -132,10 +129,7 @@ class _LeaderboardTab extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           itemCount: entries.length,
           itemBuilder: (_, i) {
-            return _LeaderboardRow(
-              entry: entries[i],
-              mode: mode,
-            );
+            return _LeaderboardRow(entry: entries[i], mode: mode);
           },
         );
       },
@@ -147,10 +141,7 @@ class _LeaderboardRow extends StatelessWidget {
   final LeaderboardEntryEntity entry;
   final _LeaderboardMode mode;
 
-  const _LeaderboardRow({
-    required this.entry,
-    required this.mode,
-  });
+  const _LeaderboardRow({required this.entry, required this.mode});
 
   @override
   Widget build(BuildContext context) {
@@ -158,17 +149,16 @@ class _LeaderboardRow extends StatelessWidget {
     final rankColor = entry.rank == 1
         ? const Color(0xFFFFD700)
         : entry.rank == 2
-            ? const Color(0xFFC0C0C0)
-            : entry.rank == 3
-                ? const Color(0xFFCD7F32)
-                : AppColors.textSecondary;
+        ? const Color(0xFFC0C0C0)
+        : entry.rank == 3
+        ? const Color(0xFFCD7F32)
+        : AppColors.textSecondary;
 
     final cardTypeColor = AppColors.cardTypeColor(entry.cardType);
     final count = mode == _LeaderboardMode.golden
         ? entry.goals
         : entry.motmCount;
-    final countLabel =
-        mode == _LeaderboardMode.golden ? 'goals' : 'MOTM';
+    final countLabel = mode == _LeaderboardMode.golden ? 'goals' : 'MOTM';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -187,7 +177,7 @@ class _LeaderboardRow extends StatelessWidget {
                 BoxShadow(
                   color: AppColors.primary.withValues(alpha: 0.15),
                   blurRadius: 12,
-                )
+                ),
               ]
             : null,
       ),
@@ -232,12 +222,15 @@ class _LeaderboardRow extends StatelessWidget {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: cardTypeColor.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                              color: cardTypeColor.withValues(alpha: 0.5)),
+                            color: cardTypeColor.withValues(alpha: 0.5),
+                          ),
                         ),
                         child: Text(
                           entry.cardType,
@@ -273,7 +266,9 @@ class _LeaderboardRow extends StatelessWidget {
                     : AppColors.surfaceVariant,
                 borderRadius: BorderRadius.circular(20),
                 border: isFirst
-                    ? Border.all(color: AppColors.accentVolt.withValues(alpha: 0.5))
+                    ? Border.all(
+                        color: AppColors.accentVolt.withValues(alpha: 0.5),
+                      )
                     : null,
               ),
               child: Column(

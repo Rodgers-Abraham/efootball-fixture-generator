@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/domain/entities/goal_event_entity.dart';
+import 'package:eFootClash/features/quick_tap/domain/entities/goal_event_entity.dart';
 
 part 'goal_event_model.freezed.dart';
 part 'goal_event_model.g.dart';
@@ -27,12 +27,12 @@ class GoalEventModel with _$GoalEventModel {
       _$GoalEventModelFromJson(json);
 
   GoalEventEntity toEntity() => GoalEventEntity(
-        id: id,
-        matchId: matchId,
-        squadItemId: squadItemId,
-        playerName: playerName,
-        teamTag: teamTag,
-        eventType: eventType,
-        createdAt: createdAt,
-      );
+    id: id,
+    matchId: matchId,
+    squadItemId: squadItemId,
+    playerName: playerName,
+    teamTag: teamTag,
+    eventType: eventType,
+    createdAt: createdAt,
+  );
 }

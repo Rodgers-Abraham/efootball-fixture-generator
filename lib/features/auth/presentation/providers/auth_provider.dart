@@ -1,10 +1,10 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
-import 'package:efootball_fixture_generator/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
-import 'package:efootball_fixture_generator/features/auth/domain/repositories/auth_repository.dart';
+import 'package:eFootClash/core/utils/supabase_client.dart';
+import 'package:eFootClash/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:eFootClash/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:eFootClash/features/auth/domain/entities/user_entity.dart';
+import 'package:eFootClash/features/auth/domain/repositories/auth_repository.dart';
 
 // ── Infrastructure ─────────────────────────────────────────────
 final authRemoteDatasourceProvider = Provider<AuthRemoteDatasource>((ref) {
@@ -18,8 +18,9 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 });
 
 // ── Auth state notifier ────────────────────────────────────────
-final authNotifierProvider =
-    AsyncNotifierProvider<AuthNotifier, UserEntity?>(AuthNotifier.new);
+final authNotifierProvider = AsyncNotifierProvider<AuthNotifier, UserEntity?>(
+  AuthNotifier.new,
+);
 
 class AuthNotifier extends AsyncNotifier<UserEntity?> {
   @override
@@ -100,13 +101,10 @@ class AuthNotifier extends AsyncNotifier<UserEntity?> {
       avatarUrl: avatarUrl,
     );
 
-    return result.fold(
-      (f) => f.message,
-      (updated) {
-        state = AsyncData(updated);
-        return null;
-      },
-    );
+    return result.fold((f) => f.message, (updated) {
+      state = AsyncData(updated);
+      return null;
+    });
   }
 
   Future<String?> uploadAvatar(File file) async {
@@ -176,14 +174,22 @@ final friendsProvider = FutureProvider<List<UserEntity>>((ref) async {
   return result.fold((_) => [], (list) => list);
 });
 
-final pendingRequestsProvider = FutureProvider<List<({String id, UserEntity fromUser})>>((ref) async {
-  final repo = ref.watch(authRepositoryProvider);
-  final result = await repo.getPendingRequests();
-  return result.fold((_) => [], (list) => list);
-});
+final pendingRequestsProvider =
+    FutureProvider<List<({String id, UserEntity fromUser})>>((ref) async {
+      final repo = ref.watch(authRepositoryProvider);
+      final result = await repo.getPendingRequests();
+      return result.fold((_) => [], (list) => list);
+    });
 
-final userTrophiesProvider = FutureProvider.family<int, String>((ref, userId) async {
+final userTrophiesProvider = FutureProvider.family<int, String>((
+  ref,
+  userId,
+) async {
   final client = ref.watch(supabaseClientProvider);
-  final response = await client.from('match_events').select('id, squad_items!inner(user_id)').eq('event_type', 'motm').eq('squad_items.user_id', userId);
+  final response = await client
+      .from('match_events')
+      .select('id, squad_items!inner(user_id)')
+      .eq('event_type', 'motm')
+      .eq('squad_items.user_id', userId);
   return (response as List).length;
 });

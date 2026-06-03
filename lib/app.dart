@@ -2,24 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:efootball_fixture_generator/core/theme/app_theme.dart';
-import 'package:efootball_fixture_generator/features/onboarding/presentation/screens/onboarding_screen.dart';
-import 'package:efootball_fixture_generator/features/analytics/presentation/screens/analytics_screen.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/screens/login_screen.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/screens/profile_screen.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/screens/register_screen.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/screens/public_profile_screen.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/presentation/screens/ocr_scanner_screen.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/presentation/screens/quick_tap_dashboard_screen.dart';
-import 'package:efootball_fixture_generator/features/squad/presentation/screens/squad_builder_screen.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/screens/create_tournament_screen.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/screens/fixture_list_screen.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/screens/standings_screen.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/screens/tournament_dashboard_screen.dart';
-import 'package:efootball_fixture_generator/shared/widgets/analytics_tab.dart';
-import 'package:efootball_fixture_generator/shared/widgets/home_shell.dart';
-import 'package:efootball_fixture_generator/shared/widgets/tournaments_tab.dart';
+import 'package:eFootClash/core/theme/app_theme.dart';
+import 'package:eFootClash/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:eFootClash/features/analytics/presentation/screens/analytics_screen.dart';
+import 'package:eFootClash/features/auth/presentation/providers/auth_provider.dart';
+import 'package:eFootClash/features/auth/presentation/screens/login_screen.dart';
+import 'package:eFootClash/features/auth/presentation/screens/profile_screen.dart';
+import 'package:eFootClash/features/auth/presentation/screens/register_screen.dart';
+import 'package:eFootClash/features/auth/presentation/screens/public_profile_screen.dart';
+import 'package:eFootClash/features/ocr_scanner/presentation/screens/ocr_scanner_screen.dart';
+import 'package:eFootClash/features/quick_tap/presentation/screens/quick_tap_dashboard_screen.dart';
+import 'package:eFootClash/features/squad/presentation/screens/squad_builder_screen.dart';
+import 'package:eFootClash/features/tournament/presentation/screens/create_tournament_screen.dart';
+import 'package:eFootClash/features/tournament/presentation/screens/fixture_list_screen.dart';
+import 'package:eFootClash/features/tournament/presentation/screens/standings_screen.dart';
+import 'package:eFootClash/features/tournament/presentation/screens/tournament_dashboard_screen.dart';
+import 'package:eFootClash/shared/widgets/analytics_tab.dart';
+import 'package:eFootClash/shared/widgets/home_shell.dart';
+import 'package:eFootClash/shared/widgets/tournaments_tab.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _hubNavKey = GlobalKey<NavigatorState>(debugLabel: 'hub');
@@ -62,12 +62,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (authState.isLoading) return null;
 
       final isLoggedIn = authState.valueOrNull != null;
-      final isAuthRoute = state.matchedLocation == '/login' ||
+      final isAuthRoute =
+          state.matchedLocation == '/login' ||
           state.matchedLocation == '/register';
 
       if (isLoggedIn && isAuthRoute) return '/home/hub';
       if (state.matchedLocation == '/home') return '/home/hub';
-      
+
       return null;
     },
     routes: [
@@ -75,10 +76,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/onboarding',
         builder: (context, state) => const OnboardingScreen(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
@@ -86,9 +84,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/profile/:id',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => PublicProfileScreen(
-          userId: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            PublicProfileScreen(userId: state.pathParameters['id']!),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>

@@ -1,14 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
 
 class HomeShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
-  const HomeShell({
-    super.key,
-    required this.navigationShell,
-  });
+  const HomeShell({super.key, required this.navigationShell});
 
   void _onTap(int index) {
     navigationShell.goBranch(
@@ -24,7 +21,9 @@ class HomeShell extends StatelessWidget {
       body: navigationShell,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          border: const Border(top: BorderSide(color: AppColors.border, width: 0.5)),
+          border: const Border(
+            top: BorderSide(color: AppColors.border, width: 0.5),
+          ),
           boxShadow: [
             BoxShadow(
               color: AppColors.primary.withValues(alpha: 0.05),

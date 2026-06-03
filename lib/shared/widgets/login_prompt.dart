@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
 
 class LoginPromptDialog extends StatelessWidget {
   final String featureName;
@@ -26,7 +26,10 @@ class LoginPromptDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('MAYBE LATER', style: TextStyle(color: AppColors.textDisabled)),
+          child: const Text(
+            'MAYBE LATER',
+            style: TextStyle(color: AppColors.textDisabled),
+          ),
         ),
         ElevatedButton(
           onPressed: () {

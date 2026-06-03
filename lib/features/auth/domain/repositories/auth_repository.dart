@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/auth/domain/entities/user_entity.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/auth/domain/entities/user_entity.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, UserEntity>> signUp({
@@ -43,5 +43,6 @@ abstract class AuthRepository {
   Future<Either<Failure, Unit>> acceptFriendRequest(String friendshipId);
   Future<Either<Failure, Unit>> declineFriendRequest(String friendshipId);
   Future<Either<Failure, List<UserEntity>>> getFriends();
-  Future<Either<Failure, List<({String id, UserEntity fromUser})>>> getPendingRequests();
+  Future<Either<Failure, List<({String id, UserEntity fromUser})>>>
+  getPendingRequests();
 }

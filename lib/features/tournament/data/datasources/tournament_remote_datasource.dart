@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/tournament/data/models/match_model.dart';
-import 'package:efootball_fixture_generator/features/tournament/data/models/tournament_model.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/tournament/data/models/match_model.dart';
+import 'package:eFootClash/features/tournament/data/models/tournament_model.dart';
 
 abstract class TournamentRemoteDatasource {
   Future<List<TournamentModel>> getTournaments();
@@ -102,11 +102,13 @@ class TournamentRemoteDatasourceImpl implements TournamentRemoteDatasource {
       final participantRows = participantIds
           .asMap()
           .entries
-          .map((e) => {
-                'tournament_id': tournamentId,
-                'user_id': e.value,
-                'seed': e.key + 1,
-              })
+          .map(
+            (e) => {
+              'tournament_id': tournamentId,
+              'user_id': e.value,
+              'seed': e.key + 1,
+            },
+          )
           .toList();
 
       await _client
@@ -114,9 +116,9 @@ class TournamentRemoteDatasourceImpl implements TournamentRemoteDatasource {
           .insert(participantRows);
     }
 
-    return TournamentModel.fromJson(inserted).copyWith(
-      participantIds: participantIds,
-    );
+    return TournamentModel.fromJson(
+      inserted,
+    ).copyWith(participantIds: participantIds);
   }
 
   @override
@@ -138,10 +140,7 @@ class TournamentRemoteDatasourceImpl implements TournamentRemoteDatasource {
 
   @override
   Future<void> deleteTournament(String id) async {
-    await _client
-        .from(AppConstants.tournamentsTable)
-        .delete()
-        .eq('id', id);
+    await _client.from(AppConstants.tournamentsTable).delete().eq('id', id);
   }
 
   @override
@@ -170,14 +169,16 @@ class TournamentRemoteDatasourceImpl implements TournamentRemoteDatasource {
   @override
   Future<List<MatchModel>> saveMatches(List<MatchModel> matches) async {
     final rows = matches
-        .map((m) => {
-              'tournament_id': m.tournamentId,
-              'round': m.round,
-              'match_number': m.matchNumber,
-              'home_user_id': m.homeUserId,
-              'away_user_id': m.awayUserId,
-              'status': AppConstants.matchScheduled,
-            })
+        .map(
+          (m) => {
+            'tournament_id': m.tournamentId,
+            'round': m.round,
+            'match_number': m.matchNumber,
+            'home_user_id': m.homeUserId,
+            'away_user_id': m.awayUserId,
+            'status': AppConstants.matchScheduled,
+          },
+        )
         .toList();
 
     final inserted = await _client

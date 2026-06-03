@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/match_entity.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/tournament/domain/entities/match_entity.dart';
 
 /// Visual bracket display for single/double elimination.
 class BracketWidget extends StatelessWidget {
@@ -12,8 +12,10 @@ class BracketWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (rounds.isEmpty) {
       return const Center(
-        child: Text('No bracket data',
-            style: TextStyle(color: AppColors.textSecondary)),
+        child: Text(
+          'No bracket data',
+          style: TextStyle(color: AppColors.textSecondary),
+        ),
       );
     }
 
@@ -54,8 +56,8 @@ class _RoundColumn extends StatelessWidget {
     final roundLabel = roundIndex == totalRounds - 1
         ? 'FINAL'
         : roundIndex == totalRounds - 2
-            ? 'SEMI-FINAL'
-            : 'ROUND ${roundIndex + 1}';
+        ? 'SEMI-FINAL'
+        : 'ROUND ${roundIndex + 1}';
 
     return SizedBox(
       width: 180,
@@ -69,8 +71,9 @@ class _RoundColumn extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
-              border:
-                  Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.4),
+              ),
             ),
             child: Text(
               roundLabel,
@@ -110,23 +113,27 @@ class _MatchCard extends StatelessWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: completed ? AppColors.success.withValues(alpha: 0.4) : AppColors.border,
+          color: completed
+              ? AppColors.success.withValues(alpha: 0.4)
+              : AppColors.border,
         ),
       ),
       child: Column(
         children: [
           _TeamRow(
-            tag: match.homeTeamTag ?? match.homeUserId?.substring(0, 4) ?? 'TBD',
+            tag:
+                match.homeTeamTag ?? match.homeUserId?.substring(0, 4) ?? 'TBD',
             score: match.homeScore,
-            isWinner: completed &&
-                (match.homeScore ?? 0) > (match.awayScore ?? 0),
+            isWinner:
+                completed && (match.homeScore ?? 0) > (match.awayScore ?? 0),
           ),
           const Divider(height: 1),
           _TeamRow(
-            tag: match.awayTeamTag ?? match.awayUserId?.substring(0, 4) ?? 'TBD',
+            tag:
+                match.awayTeamTag ?? match.awayUserId?.substring(0, 4) ?? 'TBD',
             score: match.awayScore,
-            isWinner: completed &&
-                (match.awayScore ?? 0) > (match.homeScore ?? 0),
+            isWinner:
+                completed && (match.awayScore ?? 0) > (match.homeScore ?? 0),
           ),
         ],
       ),
@@ -139,11 +146,7 @@ class _TeamRow extends StatelessWidget {
   final int? score;
   final bool isWinner;
 
-  const _TeamRow({
-    required this.tag,
-    this.score,
-    this.isWinner = false,
-  });
+  const _TeamRow({required this.tag, this.score, this.isWinner = false});
 
   @override
   Widget build(BuildContext context) {

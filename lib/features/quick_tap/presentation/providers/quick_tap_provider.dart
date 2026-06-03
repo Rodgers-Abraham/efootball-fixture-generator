@@ -1,13 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/data/datasources/quick_tap_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/data/repositories/quick_tap_repository_impl.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/domain/repositories/quick_tap_repository.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/utils/supabase_client.dart';
+import 'package:eFootClash/features/quick_tap/data/datasources/quick_tap_remote_datasource.dart';
+import 'package:eFootClash/features/quick_tap/data/repositories/quick_tap_repository_impl.dart';
+import 'package:eFootClash/features/quick_tap/domain/repositories/quick_tap_repository.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 // ── Infrastructure ─────────────────────────────────────────────
-final quickTapRemoteDatasourceProvider =
-    Provider<QuickTapRemoteDatasource>((ref) {
+final quickTapRemoteDatasourceProvider = Provider<QuickTapRemoteDatasource>((
+  ref,
+) {
   final client = ref.watch(supabaseClientProvider);
   return QuickTapRemoteDatasourceImpl(client);
 });
@@ -74,21 +75,24 @@ class QuickTapNotifier extends FamilyNotifier<QuickTapState, String> {
 
       // 3. Save MOTM
       if (state.motmSquadItemId != null) {
-        await repo.logMotm(matchId: matchId, squadItemId: state.motmSquadItemId!);
+        await repo.logMotm(
+          matchId: matchId,
+          squadItemId: state.motmSquadItemId!,
+        );
       }
 
       // 4. Update match total scores and finalize
       // We calculate totals based on state.goals
       // Note: This logic assumes we know which squad item belongs to home/away.
-      // For simplicity in this UI-first refactor, we let the backend or repository 
+      // For simplicity in this UI-first refactor, we let the backend or repository
       // handle the final match object aggregation if needed, or we fetch the match here.
-      
+
       await repo.finalizeMatch(matchId);
-      
+
       // Invalidate relevant providers
       ref.invalidate(matchesProvider(tournamentId));
       ref.invalidate(matchProvider(matchId));
-      
+
       return true;
     } catch (_) {
       return false;
@@ -100,4 +104,5 @@ class QuickTapNotifier extends FamilyNotifier<QuickTapState, String> {
 
 final quickTapNotifierProvider =
     NotifierProvider.family<QuickTapNotifier, QuickTapState, String>(
-        QuickTapNotifier.new);
+      QuickTapNotifier.new,
+    );

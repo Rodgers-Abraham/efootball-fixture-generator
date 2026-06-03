@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:efootball_fixture_generator/features/squad/data/models/player_card_model.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:eFootClash/features/squad/data/models/player_card_model.dart';
+import 'package:eFootClash/features/squad/domain/entities/squad_item_entity.dart';
 
 part 'squad_item_model.freezed.dart';
 part 'squad_item_model.g.dart';
@@ -21,10 +21,10 @@ class SquadItemModel with _$SquadItemModel {
       _$SquadItemModelFromJson(json);
 
   SquadItemEntity toEntity() => SquadItemEntity(
-        squadItemId: squadItemId,
-        userId: userId,
-        card: card.toEntity(),
-        position: position,
-        slotIndex: slotIndex,
-      );
+    squadItemId: squadItemId,
+    userId: userId,
+    card: card.toEntity(),
+    position: position,
+    slotIndex: slotIndex,
+  );
 }

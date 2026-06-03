@@ -1,4 +1,4 @@
-package com.efootball.efootball_fixture_generator
+package com.efootball.eFootClash
 
 import io.flutter.embedding.android.FlutterActivity
 

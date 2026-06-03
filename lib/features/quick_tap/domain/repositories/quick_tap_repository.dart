@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/domain/entities/goal_event_entity.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/quick_tap/domain/entities/goal_event_entity.dart';
 
 abstract class QuickTapRepository {
   Future<Either<Failure, GoalEventEntity>> logGoal({

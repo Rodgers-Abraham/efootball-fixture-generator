@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:efootball_fixture_generator/app.dart';
+import 'package:eFootClash/app.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,9 +14,5 @@ Future<void> main() async {
     anonKey: dotenv.get('SUPABASE_ANON_KEY'),
   );
 
-  runApp(
-    const ProviderScope(
-      child: App(),
-    ),
-  );
+  runApp(const ProviderScope(child: App()));
 }

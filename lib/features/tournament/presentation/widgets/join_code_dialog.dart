@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 Future<void> showJoinCodeDialog(BuildContext context, WidgetRef ref) {
   return showDialog(
@@ -66,8 +66,10 @@ class _JoinCodeDialogState extends State<_JoinCodeDialog> {
         children: [
           Icon(Icons.qr_code_scanner_outlined, color: AppColors.primary),
           SizedBox(width: 10),
-          Text('Join Tournament',
-              style: TextStyle(color: AppColors.textPrimary, fontSize: 18)),
+          Text(
+            'Join Tournament',
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          ),
         ],
       ),
       content: Column(

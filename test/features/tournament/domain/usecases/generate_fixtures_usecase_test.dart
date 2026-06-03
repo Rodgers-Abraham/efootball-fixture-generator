@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/usecases/generate_fixtures_usecase.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/tournament/domain/usecases/generate_fixtures_usecase.dart';
 
 void main() {
   late GenerateFixturesUseCase useCase;
@@ -56,21 +56,24 @@ void main() {
   });
 
   group('GenerateFixturesUseCase - Single Elimination', () {
-    test('should generate correct rounds for power-of-two participants (4)', () {
-      final participants = ['u1', 'u2', 'u3', 'u4'];
-      final rounds = useCase(
-        tournamentId: tournamentId,
-        format: AppConstants.formatSingleElimination,
-        participantIds: participants,
-      );
+    test(
+      'should generate correct rounds for power-of-two participants (4)',
+      () {
+        final participants = ['u1', 'u2', 'u3', 'u4'];
+        final rounds = useCase(
+          tournamentId: tournamentId,
+          format: AppConstants.formatSingleElimination,
+          participantIds: participants,
+        );
 
-      // Round 1: 2 matches, Round 2: 1 match (Final)
-      expect(rounds.length, 2);
-      expect(rounds[0].length, 2);
-      expect(rounds[1].length, 1);
-      expect(rounds[1][0].homeUserId, isNull);
-      expect(rounds[1][0].awayUserId, isNull);
-    });
+        // Round 1: 2 matches, Round 2: 1 match (Final)
+        expect(rounds.length, 2);
+        expect(rounds[0].length, 2);
+        expect(rounds[1].length, 1);
+        expect(rounds[1][0].homeUserId, isNull);
+        expect(rounds[1][0].awayUserId, isNull);
+      },
+    );
 
     test('should pad with byes for non-power-of-two (3 teams)', () {
       final participants = ['u1', 'u2', 'u3'];
@@ -80,27 +83,32 @@ void main() {
         participantIds: participants,
       );
 
-      // 3 teams pads to 4. 
+      // 3 teams pads to 4.
       // Round 1: 2 matches
       expect(rounds.length, 2);
       expect(rounds[0].length, 2);
-      final hasBye = rounds[0].any((m) => m.homeUserId == null || m.awayUserId == null);
+      final hasBye = rounds[0].any(
+        (m) => m.homeUserId == null || m.awayUserId == null,
+      );
       expect(hasBye, true);
     });
   });
 
   group('GenerateFixturesUseCase - Double Elimination', () {
-    test('should generate structure including losers bracket and grand final', () {
-      final participants = ['u1', 'u2', 'u3', 'u4'];
-      final rounds = useCase(
-        tournamentId: tournamentId,
-        format: AppConstants.formatDoubleElimination,
-        participantIds: participants,
-      );
+    test(
+      'should generate structure including losers bracket and grand final',
+      () {
+        final participants = ['u1', 'u2', 'u3', 'u4'];
+        final rounds = useCase(
+          tournamentId: tournamentId,
+          format: AppConstants.formatDoubleElimination,
+          participantIds: participants,
+        );
 
-      expect(rounds.length, 4);
-      expect(rounds.last.length, 1);
-      expect(rounds.last[0].id, 'grand_final');
-    });
+        expect(rounds.length, 4);
+        expect(rounds.last.length, 1);
+        expect(rounds.last[0].id, 'grand_final');
+      },
+    );
   });
 }

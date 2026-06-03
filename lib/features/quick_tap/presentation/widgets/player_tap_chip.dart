@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/squad/domain/entities/squad_item_entity.dart';
 
 /// Tappable player chip for the Quick-Tap dashboard.
 /// [count] = goals for this player (shows badge when > 0)
@@ -45,8 +45,8 @@ class PlayerTapChip extends StatelessWidget {
             color: isMotmSelected
                 ? const Color(0xFFFFD700)
                 : active
-                    ? AppColors.accentVolt
-                    : AppColors.border,
+                ? AppColors.accentVolt
+                : AppColors.border,
             width: active ? 1.5 : 1,
           ),
           boxShadow: active
@@ -57,7 +57,7 @@ class PlayerTapChip extends StatelessWidget {
                         : AppColors.accentVolt.withValues(alpha: 0.25),
                     blurRadius: 10,
                     spreadRadius: 0,
-                  )
+                  ),
                 ]
               : null,
         ),

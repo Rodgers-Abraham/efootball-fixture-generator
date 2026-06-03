@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/data/models/goal_event_model.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/quick_tap/data/models/goal_event_model.dart';
 
 abstract class QuickTapRemoteDatasource {
   Future<GoalEventModel> logEvent({
@@ -48,9 +48,12 @@ class QuickTapRemoteDatasourceImpl implements QuickTapRemoteDatasource {
 
   @override
   Future<void> finalizeMatch(String matchId) async {
-    await _client.from(AppConstants.matchesTable).update({
-      'status': AppConstants.matchCompleted,
-      'played_at': DateTime.now().toIso8601String(),
-    }).eq('id', matchId);
+    await _client
+        .from(AppConstants.matchesTable)
+        .update({
+          'status': AppConstants.matchCompleted,
+          'played_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', matchId);
   }
 }

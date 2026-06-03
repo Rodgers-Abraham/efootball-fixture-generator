@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
-import 'package:efootball_fixture_generator/features/squad/data/datasources/squad_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/squad/data/repositories/squad_repository_impl.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/player_card_entity.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/repositories/squad_repository.dart';
+import 'package:eFootClash/core/utils/supabase_client.dart';
+import 'package:eFootClash/features/auth/presentation/providers/auth_provider.dart';
+import 'package:eFootClash/features/squad/data/datasources/squad_remote_datasource.dart';
+import 'package:eFootClash/features/squad/data/repositories/squad_repository_impl.dart';
+import 'package:eFootClash/features/squad/domain/entities/player_card_entity.dart';
+import 'package:eFootClash/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:eFootClash/features/squad/domain/repositories/squad_repository.dart';
 
 // ── Datasource & repository ────────────────────────────────────
 final squadRemoteDatasourceProvider = Provider<SquadRemoteDatasource>((ref) {
@@ -24,17 +24,18 @@ final cardSearchQueryProvider = StateProvider<String>((ref) => '');
 
 final cardSearchResultsProvider =
     FutureProvider.autoDispose<List<PlayerCardEntity>>((ref) async {
-  final query = ref.watch(cardSearchQueryProvider);
-  if (query.trim().isEmpty) return [];
-  final repo = ref.watch(squadRepositoryProvider);
-  final result = await repo.searchCards(query);
-  return result.fold((_) => [], (cards) => cards);
-});
+      final query = ref.watch(cardSearchQueryProvider);
+      if (query.trim().isEmpty) return [];
+      final repo = ref.watch(squadRepositoryProvider);
+      final result = await repo.searchCards(query);
+      return result.fold((_) => [], (cards) => cards);
+    });
 
 // ── User squad ─────────────────────────────────────────────────
 final userSquadProvider =
     AsyncNotifierProvider<UserSquadNotifier, List<SquadItemEntity>>(
-        UserSquadNotifier.new);
+      UserSquadNotifier.new,
+    );
 
 class UserSquadNotifier extends AsyncNotifier<List<SquadItemEntity>> {
   @override
@@ -62,38 +63,34 @@ class UserSquadNotifier extends AsyncNotifier<List<SquadItemEntity>> {
       slotIndex: slotIndex,
     );
 
-    result.fold(
-      (_) {},
-      (newItem) {
-        final current = state.valueOrNull ?? [];
-        // Replace existing item at slot, or add
-        final updated = [
-          ...current.where((i) => i.slotIndex != slotIndex),
-          newItem,
-        ]..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
-        state = AsyncData(updated);
-      },
-    );
+    result.fold((_) {}, (newItem) {
+      final current = state.valueOrNull ?? [];
+      // Replace existing item at slot, or add
+      final updated = [
+        ...current.where((i) => i.slotIndex != slotIndex),
+        newItem,
+      ]..sort((a, b) => a.slotIndex.compareTo(b.slotIndex));
+      state = AsyncData(updated);
+    });
   }
 
   Future<void> removeCard(String squadItemId) async {
     final repo = ref.read(squadRepositoryProvider);
     final result = await repo.removeCardFromSquad(squadItemId);
-    result.fold(
-      (_) {},
-      (_) {
-        final current = state.valueOrNull ?? [];
-        state = AsyncData(
-          current.where((i) => i.squadItemId != squadItemId).toList(),
-        );
-      },
-    );
+    result.fold((_) {}, (_) {
+      final current = state.valueOrNull ?? [];
+      state = AsyncData(
+        current.where((i) => i.squadItemId != squadItemId).toList(),
+      );
+    });
   }
 }
 
 /// Provider to fetch any specific user's squad (used in Tactical Grid & Public Profiles)
-final matchSquadProvider = FutureProvider.family<List<SquadItemEntity>, String>((ref, userId) async {
-  final repo = ref.watch(squadRepositoryProvider);
-  final result = await repo.getUserSquad(userId);
-  return result.fold((_) => [], (items) => items);
-});
+final matchSquadProvider = FutureProvider.family<List<SquadItemEntity>, String>(
+  (ref, userId) async {
+    final repo = ref.watch(squadRepositoryProvider);
+    final result = await repo.getUserSquad(userId);
+    return result.fold((_) => [], (items) => items);
+  },
+);

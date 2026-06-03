@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/tournament_entity.dart';
+import 'package:eFootClash/features/tournament/domain/entities/tournament_entity.dart';
 
 part 'tournament_model.freezed.dart';
 part 'tournament_model.g.dart';
@@ -23,24 +23,24 @@ class TournamentModel with _$TournamentModel {
       _$TournamentModelFromJson(json);
 
   factory TournamentModel.fromEntity(TournamentEntity e) => TournamentModel(
-        id: e.id,
-        name: e.name,
-        format: e.format,
-        status: e.status,
-        createdBy: e.createdBy,
-        inviteCode: e.inviteCode,
-        createdAt: e.createdAt,
-        participantIds: e.participantIds,
-      );
+    id: e.id,
+    name: e.name,
+    format: e.format,
+    status: e.status,
+    createdBy: e.createdBy,
+    inviteCode: e.inviteCode,
+    createdAt: e.createdAt,
+    participantIds: e.participantIds,
+  );
 
   TournamentEntity toEntity() => TournamentEntity(
-        id: id,
-        name: name,
-        format: format,
-        status: status,
-        createdBy: createdBy,
-        inviteCode: inviteCode,
-        createdAt: createdAt,
-        participantIds: participantIds,
-      );
+    id: id,
+    name: name,
+    format: format,
+    status: status,
+    createdBy: createdBy,
+    inviteCode: inviteCode,
+    createdAt: createdAt,
+    participantIds: participantIds,
+  );
 }

@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/analytics/domain/entities/leaderboard_entry_entity.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/analytics/domain/entities/leaderboard_entry_entity.dart';
 
 abstract class AnalyticsRemoteDatasource {
   Future<List<LeaderboardEntryEntity>> getGoldenBoot(String tournamentId);
@@ -14,7 +14,8 @@ class AnalyticsRemoteDatasourceImpl implements AnalyticsRemoteDatasource {
 
   @override
   Future<List<LeaderboardEntryEntity>> getGoldenBoot(
-      String tournamentId) async {
+    String tournamentId,
+  ) async {
     // Fetch all goal events for this tournament, join through squad_items and
     // player_cards, then aggregate in Dart.
     final rows = await _client
@@ -60,15 +61,17 @@ class AnalyticsRemoteDatasourceImpl implements AnalyticsRemoteDatasource {
       final card = squadItem['player_cards'] as Map<String, dynamic>;
       final user = squadItem['users'] as Map<String, dynamic>;
 
-      entries.add(LeaderboardEntryEntity(
-        rank: rank++,
-        playerName: card['player_name'] as String,
-        teamTag: user['team_tag'] as String,
-        cardType: card['card_type'] as String,
-        goals: entry.value,
-        cardImageUrl: card['card_image_url'] as String?,
-        squadItemId: entry.key,
-      ));
+      entries.add(
+        LeaderboardEntryEntity(
+          rank: rank++,
+          playerName: card['player_name'] as String,
+          teamTag: user['team_tag'] as String,
+          cardType: card['card_type'] as String,
+          goals: entry.value,
+          cardImageUrl: card['card_image_url'] as String?,
+          squadItemId: entry.key,
+        ),
+      );
     }
 
     return entries;
@@ -76,7 +79,8 @@ class AnalyticsRemoteDatasourceImpl implements AnalyticsRemoteDatasource {
 
   @override
   Future<List<LeaderboardEntryEntity>> getMotmLeaderboard(
-      String tournamentId) async {
+    String tournamentId,
+  ) async {
     final rows = await _client
         .from(AppConstants.matchEventsTable)
         .select('''
@@ -119,15 +123,17 @@ class AnalyticsRemoteDatasourceImpl implements AnalyticsRemoteDatasource {
       final card = squadItem['player_cards'] as Map<String, dynamic>;
       final user = squadItem['users'] as Map<String, dynamic>;
 
-      entries.add(LeaderboardEntryEntity(
-        rank: rank++,
-        playerName: card['player_name'] as String,
-        teamTag: user['team_tag'] as String,
-        cardType: card['card_type'] as String,
-        motmCount: entry.value,
-        cardImageUrl: card['card_image_url'] as String?,
-        squadItemId: entry.key,
-      ));
+      entries.add(
+        LeaderboardEntryEntity(
+          rank: rank++,
+          playerName: card['player_name'] as String,
+          teamTag: user['team_tag'] as String,
+          cardType: card['card_type'] as String,
+          motmCount: entry.value,
+          cardImageUrl: card['card_image_url'] as String?,
+          squadItemId: entry.key,
+        ),
+      );
     }
 
     return entries;

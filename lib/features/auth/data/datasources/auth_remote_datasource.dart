@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/features/auth/data/models/user_model.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/features/auth/data/models/user_model.dart';
 
 abstract class AuthRemoteDatasource {
   Future<UserModel> signUp({
@@ -11,10 +11,7 @@ abstract class AuthRemoteDatasource {
     required String password,
   });
 
-  Future<UserModel> signIn({
-    required String email,
-    required String password,
-  });
+  Future<UserModel> signIn({required String email, required String password});
 
   Future<void> signOut();
 
@@ -185,11 +182,9 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
     final fileName = '${DateTime.now().millisecondsSinceEpoch}.$fileExt';
     final path = '$userId/$fileName';
 
-    await _client.storage.from('avatars').upload(
-          path,
-          imageFile,
-          fileOptions: const FileOptions(upsert: true),
-        );
+    await _client.storage
+        .from('avatars')
+        .upload(path, imageFile, fileOptions: const FileOptions(upsert: true));
 
     final imageUrl = _client.storage.from('avatars').getPublicUrl(path);
     return imageUrl;
@@ -220,7 +215,10 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
   @override
   Future<void> acceptFriendRequest(String friendshipId) async {
-    await _client.from('friendships').update({'status': 'accepted'}).eq('id', friendshipId);
+    await _client
+        .from('friendships')
+        .update({'status': 'accepted'})
+        .eq('id', friendshipId);
   }
 
   @override
@@ -230,11 +228,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
   @override
   Future<List<UserModel>> getFriends(String userId) async {
-    final response = await _client.from('friendships')
+    final response = await _client
+        .from('friendships')
         .select('*, user1:users!user_id_1(*), user2:users!user_id_2(*)')
         .eq('status', 'accepted')
         .or('user_id_1.eq.$userId,user_id_2.eq.$userId');
-    
+
     final List<UserModel> friends = [];
     for (var row in (response as List)) {
       final u1 = UserModel.fromJson(row['user1']);
@@ -246,11 +245,12 @@ class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
 
   @override
   Future<List<Map<String, dynamic>>> getPendingRequests(String userId) async {
-    final response = await _client.from('friendships')
+    final response = await _client
+        .from('friendships')
         .select('id, fromUser:users!user_id_1(*)')
         .eq('status', 'pending')
         .eq('user_id_2', userId);
-    
+
     return List<Map<String, dynamic>>.from(response);
   }
 }

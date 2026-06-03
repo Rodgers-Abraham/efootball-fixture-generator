@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
 
 final onboardingCompletedProvider = StateProvider<bool>((ref) => false);
 
@@ -20,22 +20,26 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final List<_OnboardingPage> _pages = [
     const _OnboardingPage(
       title: 'WELCOME CHAMPION',
-      description: 'The ultimate tool for eFootball tournament management. Generate brackets, track stats, and climb the leaderboard.',
+      description:
+          'The ultimate tool for eFootball tournament management. Generate brackets, track stats, and climb the leaderboard.',
       icon: Icons.sports_soccer,
     ),
     const _OnboardingPage(
       title: 'SCAN & TRACK',
-      description: 'Upload match screenshots and let our AI extract goals, possession, and player performance automatically.',
+      description:
+          'Upload match screenshots and let our AI extract goals, possession, and player performance automatically.',
       icon: Icons.camera_alt_outlined,
     ),
     const _OnboardingPage(
       title: 'BUILD YOUR SQUAD',
-      description: 'Manage your player cards, select your starters, and showcase your dream team to the community.',
+      description:
+          'Manage your player cards, select your starters, and showcase your dream team to the community.',
       icon: Icons.groups_outlined,
     ),
     const _OnboardingPage(
       title: 'WIN TROPHIES',
-      description: 'Compete in tournaments, earn your spot on the standings board, and fill your trophy cabinet with gold.',
+      description:
+          'Compete in tournaments, earn your spot on the standings board, and fill your trophy cabinet with gold.',
       icon: Icons.emoji_events_outlined,
     ),
   ];
@@ -68,7 +72,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Column(
               children: [
@@ -76,11 +80,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: PageView.builder(
                     controller: _pageController,
                     itemCount: _pages.length,
-                    onPageChanged: (index) => setState(() => _currentPage = index),
+                    onPageChanged: (index) =>
+                        setState(() => _currentPage = index),
                     itemBuilder: (context, index) => _pages[index],
                   ),
                 ),
-                
+
                 // Indicators & Buttons
                 Padding(
                   padding: const EdgeInsets.all(24.0),
@@ -97,15 +102,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             height: 8,
                             width: _currentPage == index ? 24 : 8,
                             decoration: BoxDecoration(
-                              color: _currentPage == index 
-                                  ? AppColors.primary 
+                              color: _currentPage == index
+                                  ? AppColors.primary
                                   : AppColors.textDisabled,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
                         ),
                       ),
-                      
+
                       // Action Button
                       ElevatedButton(
                         onPressed: () {
@@ -119,10 +124,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 32,
+                            vertical: 16,
+                          ),
                         ),
                         child: Text(
-                          _currentPage == _pages.length - 1 ? 'GET STARTED' : 'NEXT',
+                          _currentPage == _pages.length - 1
+                              ? 'GET STARTED'
+                              : 'NEXT',
                         ),
                       ),
                     ],
@@ -160,13 +170,12 @@ class _OnboardingPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 2),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                width: 2,
+              ),
             ),
-            child: Icon(
-              icon,
-              size: 100,
-              color: AppColors.primary,
-            ),
+            child: Icon(icon, size: 100, color: AppColors.primary),
           ),
           const SizedBox(height: 48),
           Text(

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 class CreateTournamentScreen extends ConsumerStatefulWidget {
   const CreateTournamentScreen({super.key});
@@ -53,7 +53,7 @@ class _CreateTournamentScreenState
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     // NOTE: Removed requirement for at least 2 participants.
     // Users can now create an empty tournament and have others join later.
 
@@ -74,8 +74,7 @@ class _CreateTournamentScreenState
       context.go('/tournament/${tournament.id}');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Failed to create tournament')),
+        const SnackBar(content: Text('Failed to create tournament')),
       );
     }
   }
@@ -132,7 +131,9 @@ class _CreateTournamentScreenState
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 3),
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(12),
@@ -177,11 +178,21 @@ class _CreateTournamentScreenState
 
   Widget _buildFormatSelector() {
     final formats = [
-      (AppConstants.formatRoundRobin, 'Round Robin', Icons.format_list_bulleted),
-      (AppConstants.formatSingleElimination, 'Single Elimination',
-          Icons.account_tree_outlined),
-      (AppConstants.formatDoubleElimination, 'Double Elimination',
-          Icons.device_hub),
+      (
+        AppConstants.formatRoundRobin,
+        'Round Robin',
+        Icons.format_list_bulleted,
+      ),
+      (
+        AppConstants.formatSingleElimination,
+        'Single Elimination',
+        Icons.account_tree_outlined,
+      ),
+      (
+        AppConstants.formatDoubleElimination,
+        'Double Elimination',
+        Icons.device_hub,
+      ),
     ];
 
     return Column(
@@ -205,10 +216,11 @@ class _CreateTournamentScreenState
             ),
             child: Row(
               children: [
-                Icon(f.$3,
-                    color:
-                        selected ? AppColors.primary : AppColors.textSecondary,
-                    size: 20),
+                Icon(
+                  f.$3,
+                  color: selected ? AppColors.primary : AppColors.textSecondary,
+                  size: 20,
+                ),
                 const SizedBox(width: 12),
                 Text(
                   f.$2,
@@ -221,8 +233,11 @@ class _CreateTournamentScreenState
                 ),
                 const Spacer(),
                 if (selected)
-                  const Icon(Icons.check_circle,
-                      color: AppColors.primary, size: 18),
+                  const Icon(
+                    Icons.check_circle,
+                    color: AppColors.primary,
+                    size: 18,
+                  ),
               ],
             ),
           ),
@@ -285,10 +300,11 @@ class _CreateTournamentScreenState
                 title: Text(username),
                 subtitle: Text(teamTag),
                 trailing: isSelected
-                    ? const Icon(Icons.check_circle,
-                        color: AppColors.primary)
-                    : const Icon(Icons.radio_button_unchecked,
-                        color: AppColors.textDisabled),
+                    ? const Icon(Icons.check_circle, color: AppColors.primary)
+                    : const Icon(
+                        Icons.radio_button_unchecked,
+                        color: AppColors.textDisabled,
+                      ),
                 onTap: () {
                   setState(() {
                     if (isSelected) {
@@ -299,8 +315,7 @@ class _CreateTournamentScreenState
                   });
                 },
               ),
-              if (!isLast)
-                const Divider(height: 1, indent: 16, endIndent: 16),
+              if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
             ],
           );
         }).toList(),

@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/player_card_entity.dart';
+import 'package:eFootClash/features/squad/domain/entities/player_card_entity.dart';
 
 part 'player_card_model.freezed.dart';
 part 'player_card_model.g.dart';
@@ -29,10 +29,10 @@ class PlayerCardModel with _$PlayerCardModel {
       );
 
   PlayerCardEntity toEntity() => PlayerCardEntity(
-        masterCardId: masterCardId,
-        playerName: playerName,
-        cardType: cardType,
-        maxRating: maxRating,
-        cardImageUrl: cardImageUrl,
-      );
+    masterCardId: masterCardId,
+    playerName: playerName,
+    cardType: cardType,
+    maxRating: maxRating,
+    cardImageUrl: cardImageUrl,
+  );
 }

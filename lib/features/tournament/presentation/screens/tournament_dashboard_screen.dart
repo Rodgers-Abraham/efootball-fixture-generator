@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/analytics/presentation/providers/analytics_provider.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
-import 'package:efootball_fixture_generator/shared/widgets/esports_components.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/analytics/presentation/providers/analytics_provider.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/shared/widgets/esports_components.dart';
 
 class TournamentDashboardScreen extends ConsumerWidget {
   const TournamentDashboardScreen({super.key});
@@ -35,9 +35,16 @@ class TournamentDashboardScreen extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.sports_soccer, size: 64, color: AppColors.textDisabled),
+          const Icon(
+            Icons.sports_soccer,
+            size: 64,
+            color: AppColors.textDisabled,
+          ),
           const SizedBox(height: 16),
-          const Text('No active tournaments', style: TextStyle(color: AppColors.textSecondary)),
+          const Text(
+            'No active tournaments',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
           const SizedBox(height: 24),
           ElevatedButton(
             onPressed: () => context.push('/tournament/create'),
@@ -48,7 +55,11 @@ class TournamentDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildDashboard(BuildContext context, WidgetRef ref, String tournamentId) {
+  Widget _buildDashboard(
+    BuildContext context,
+    WidgetRef ref,
+    String tournamentId,
+  ) {
     final matchesAsync = ref.watch(matchesProvider(tournamentId));
     final goldenBootAsync = ref.watch(goldenBootProvider(tournamentId));
 
@@ -76,9 +87,18 @@ class TournamentDashboardScreen extends ConsumerWidget {
                 crossAxisSpacing: 12,
                 pattern: const [
                   StairedGridTile(1.0, 2 / 1.2), // Live Match (Full width)
-                  StairedGridTile(0.5, 1 / 1.5), // Golden Boot (Left half, tall)
-                  StairedGridTile(0.5, 1 / 1),   // Scan Button (Right half, square)
-                  StairedGridTile(0.5, 1 / 1),   // Bracket State (Right half, square)
+                  StairedGridTile(
+                    0.5,
+                    1 / 1.5,
+                  ), // Golden Boot (Left half, tall)
+                  StairedGridTile(
+                    0.5,
+                    1 / 1,
+                  ), // Scan Button (Right half, square)
+                  StairedGridTile(
+                    0.5,
+                    1 / 1,
+                  ), // Bracket State (Right half, square)
                 ],
               ),
               delegate: SliverChildListDelegate([
@@ -86,7 +106,10 @@ class TournamentDashboardScreen extends ConsumerWidget {
                 matchesAsync.when(
                   data: (matches) {
                     if (matches.isEmpty) {
-                       return const BentoTile(label: 'Live Fixture', child: Center(child: Text('No matches generated')));
+                      return const BentoTile(
+                        label: 'Live Fixture',
+                        child: Center(child: Text('No matches generated')),
+                      );
                     }
                     final nextMatch = matches.firstWhere(
                       (m) => m.status == 'scheduled',
@@ -100,43 +123,56 @@ class TournamentDashboardScreen extends ConsumerWidget {
                       possession: 0.5,
                     );
                   },
-                  loading: () => const BentoTile(child: Center(child: CircularProgressIndicator())),
-                  error: (_, _) => const BentoTile(child: Center(child: Icon(Icons.error))),
+                  loading: () => const BentoTile(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (_, _) =>
+                      const BentoTile(child: Center(child: Icon(Icons.error))),
                 ),
 
                 // 2. Golden Boot Tile
                 goldenBootAsync.when(
                   data: (entries) => BentoTile(
                     label: 'Golden Boot',
-                    child: entries.isEmpty 
-                      ? const Center(child: Icon(Icons.star_outline, color: AppColors.textDisabled))
-                      : Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              if (entries.length > 1)
-                                Positioned(
-                                  top: 40, left: 10, right: 10,
-                                  child: EsportsPlayerCard(
-                                    playerName: entries[1].playerName,
-                                    teamTag: entries[1].teamTag,
-                                    imageUrl: entries[1].cardImageUrl,
-                                    scale: 0.85,
+                    child: entries.isEmpty
+                        ? const Center(
+                            child: Icon(
+                              Icons.star_outline,
+                              color: AppColors.textDisabled,
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                if (entries.length > 1)
+                                  Positioned(
+                                    top: 40,
+                                    left: 10,
+                                    right: 10,
+                                    child: EsportsPlayerCard(
+                                      playerName: entries[1].playerName,
+                                      teamTag: entries[1].teamTag,
+                                      imageUrl: entries[1].cardImageUrl,
+                                      scale: 0.85,
+                                    ),
                                   ),
+                                EsportsPlayerCard(
+                                  playerName: entries[0].playerName,
+                                  teamTag: entries[0].teamTag,
+                                  imageUrl: entries[0].cardImageUrl,
+                                  isMotm: true,
                                 ),
-                              EsportsPlayerCard(
-                                playerName: entries[0].playerName,
-                                teamTag: entries[0].teamTag,
-                                imageUrl: entries[0].cardImageUrl,
-                                isMotm: true,
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
                   ),
-                  loading: () => const BentoTile(child: Center(child: CircularProgressIndicator())),
-                  error: (_, _) => const BentoTile(child: Center(child: Icon(Icons.error))),
+                  loading: () => const BentoTile(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                  error: (_, _) =>
+                      const BentoTile(child: Center(child: Icon(Icons.error))),
                 ),
 
                 // 3. Scan Button Tile
@@ -144,8 +180,13 @@ class TournamentDashboardScreen extends ConsumerWidget {
                   onTap: () {
                     matchesAsync.whenData((matches) {
                       if (matches.isEmpty) return;
-                      final m = matches.firstWhere((m) => m.status != 'completed', orElse: () => matches.first);
-                      context.push('/tournament/$tournamentId/match/${m.id}/scan');
+                      final m = matches.firstWhere(
+                        (m) => m.status != 'completed',
+                        orElse: () => matches.first,
+                      );
+                      context.push(
+                        '/tournament/$tournamentId/match/${m.id}/scan',
+                      );
                     });
                   },
                   child: const BentoTile(
@@ -153,10 +194,19 @@ class TournamentDashboardScreen extends ConsumerWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt_outlined, color: AppColors.accentVolt, size: 32),
+                        Icon(
+                          Icons.camera_alt_outlined,
+                          color: AppColors.accentVolt,
+                          size: 32,
+                        ),
                         SizedBox(height: 8),
-                        Text('SCAN\nSCREEN', 
-                          style: TextStyle(color: AppColors.accentVolt, fontSize: 10, fontWeight: FontWeight.w900),
+                        Text(
+                          'SCAN\nSCREEN',
+                          style: TextStyle(
+                            color: AppColors.accentVolt,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -170,7 +220,11 @@ class TournamentDashboardScreen extends ConsumerWidget {
                   child: BentoTile(
                     label: 'Bracket',
                     child: Center(
-                      child: Icon(Icons.account_tree_outlined, color: AppColors.primary.withValues(alpha: 0.5), size: 40),
+                      child: Icon(
+                        Icons.account_tree_outlined,
+                        color: AppColors.primary.withValues(alpha: 0.5),
+                        size: 40,
+                      ),
                     ),
                   ),
                 ),

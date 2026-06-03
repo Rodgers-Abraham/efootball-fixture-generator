@@ -4,11 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/presentation/providers/ocr_provider.dart';
-import 'package:efootball_fixture_generator/features/ocr_scanner/presentation/screens/manual_entry_screen.dart';
-import 'package:efootball_fixture_generator/features/tournament/presentation/providers/tournament_provider.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/ocr_scanner/presentation/providers/ocr_provider.dart';
+import 'package:eFootClash/features/ocr_scanner/presentation/screens/manual_entry_screen.dart';
+import 'package:eFootClash/features/tournament/presentation/providers/tournament_provider.dart';
 
 class OcrScannerScreen extends ConsumerStatefulWidget {
   final String tournamentId;
@@ -28,14 +28,9 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
   final _picker = ImagePicker();
 
   Future<void> _pickImage(ImageSource source) async {
-    final xFile = await _picker.pickImage(
-      source: source,
-      imageQuality: 95,
-    );
+    final xFile = await _picker.pickImage(source: source, imageQuality: 95);
     if (xFile == null) return;
-    await ref
-        .read(ocrNotifierProvider.notifier)
-        .scan(File(xFile.path));
+    await ref.read(ocrNotifierProvider.notifier).scan(File(xFile.path));
   }
 
   Future<void> _confirmAndProceed() async {
@@ -61,14 +56,15 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
 
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(failure.displayMessage)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(failure.displayMessage)));
       },
       (_) {
         ref.read(ocrNotifierProvider.notifier).reset();
         context.go(
-            '/tournament/${widget.tournamentId}/match/${widget.matchId}/quick-tap');
+          '/tournament/${widget.tournamentId}/match/${widget.matchId}/quick-tap',
+        );
       },
     );
   }
@@ -84,8 +80,7 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                  builder: (_) => const ManualEntryScreen()),
+              MaterialPageRoute(builder: (_) => const ManualEntryScreen()),
             ),
             child: const Text('Manual Entry'),
           ),
@@ -120,8 +115,7 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
               const SizedBox(height: 12),
               OutlinedButton(
                 onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                      builder: (_) => const ManualEntryScreen()),
+                  MaterialPageRoute(builder: (_) => const ManualEntryScreen()),
                 ),
                 child: const Text('EDIT MANUALLY'),
               ),
@@ -140,9 +134,7 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
         color: AppColors.surfaceVariant,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: state.stats != null
-              ? AppColors.accentVolt
-              : AppColors.border,
+          color: state.stats != null ? AppColors.accentVolt : AppColors.border,
           width: state.stats != null ? 2 : 1,
         ),
         boxShadow: state.stats != null
@@ -151,16 +143,13 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
                   color: AppColors.accentVolt.withValues(alpha: 0.25),
                   blurRadius: 16,
                   spreadRadius: 0,
-                )
+                ),
               ]
             : null,
       ),
       clipBehavior: Clip.antiAlias,
       child: state.selectedImage != null
-          ? Image.file(
-              state.selectedImage!,
-              fit: BoxFit.cover,
-            )
+          ? Image.file(state.selectedImage!, fit: BoxFit.cover)
           : Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -184,9 +173,7 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
       children: [
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: isScanning
-                ? null
-                : () => _pickImage(ImageSource.camera),
+            onPressed: isScanning ? null : () => _pickImage(ImageSource.camera),
             icon: const Icon(Icons.camera_alt_outlined, size: 18),
             label: const Text('Take Photo'),
           ),
@@ -217,18 +204,18 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
         children: [
           // Shimmer scan line animation
           Container(
-            height: 4,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.transparent,
-                  AppColors.accentVolt,
-                  Colors.transparent,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          )
+                height: 4,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      AppColors.accentVolt,
+                      Colors.transparent,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              )
               .animate(onPlay: (c) => c.repeat())
               .shimmer(duration: 1200.ms, color: AppColors.accentVolt),
           const SizedBox(height: 16),
@@ -254,8 +241,11 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.warning_amber_rounded,
-              color: AppColors.warning, size: 20),
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: AppColors.warning,
+            size: 20,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -272,7 +262,8 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
                 TextButton(
                   onPressed: () => Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (_) => const ManualEntryScreen()),
+                      builder: (_) => const ManualEntryScreen(),
+                    ),
                   ),
                   child: const Text('Enter Manually'),
                 ),
@@ -328,7 +319,12 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
             ],
           ),
           const Divider(height: 24),
-          _statRow('Possession', s.homePossession, s.awayPossession, suffix: '%'),
+          _statRow(
+            'Possession',
+            s.homePossession,
+            s.awayPossession,
+            suffix: '%',
+          ),
           _statRow('Total Shots', s.homeShots, s.awayShots),
           _statRow('Shots on Target', s.homeShotsOnTarget, s.awayShotsOnTarget),
           _statRow('Fouls', s.homeFouls, s.awayFouls),
@@ -385,8 +381,8 @@ class _OcrScannerScreenState extends ConsumerState<OcrScannerScreen> {
     final color = confidence >= 0.9
         ? AppColors.success
         : confidence >= 0.75
-            ? AppColors.warning
-            : AppColors.error;
+        ? AppColors.warning
+        : AppColors.error;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

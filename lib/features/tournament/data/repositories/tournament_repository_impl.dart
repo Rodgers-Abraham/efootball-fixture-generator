@@ -1,11 +1,11 @@
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/tournament/data/datasources/tournament_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/tournament/data/models/match_model.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/bracket_entity.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/match_entity.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/entities/tournament_entity.dart';
-import 'package:efootball_fixture_generator/features/tournament/domain/repositories/tournament_repository.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/tournament/data/datasources/tournament_remote_datasource.dart';
+import 'package:eFootClash/features/tournament/data/models/match_model.dart';
+import 'package:eFootClash/features/tournament/domain/entities/bracket_entity.dart';
+import 'package:eFootClash/features/tournament/domain/entities/match_entity.dart';
+import 'package:eFootClash/features/tournament/domain/entities/tournament_entity.dart';
+import 'package:eFootClash/features/tournament/domain/repositories/tournament_repository.dart';
 
 class TournamentRepositoryImpl implements TournamentRepository {
   final TournamentRemoteDatasource _datasource;
@@ -58,7 +58,10 @@ class TournamentRepositoryImpl implements TournamentRepository {
     required String status,
   }) async {
     try {
-      final model = await _datasource.updateTournamentStatus(id: id, status: status);
+      final model = await _datasource.updateTournamentStatus(
+        id: id,
+        status: status,
+      );
       return Right(model.toEntity());
     } on Exception catch (e) {
       return Left(Failure.server(message: e.toString()));
@@ -104,11 +107,13 @@ class TournamentRepositoryImpl implements TournamentRepository {
       final roundNums = roundMap.keys.toList()..sort();
       final rounds = roundNums.map((r) => roundMap[r]!).toList();
 
-      return Right(BracketEntity(
-        tournamentId: tournamentId,
-        format: tournament.format,
-        rounds: rounds,
-      ));
+      return Right(
+        BracketEntity(
+          tournamentId: tournamentId,
+          format: tournament.format,
+          rounds: rounds,
+        ),
+      );
     } on Exception catch (e) {
       return Left(Failure.server(message: e.toString()));
     }
@@ -116,7 +121,8 @@ class TournamentRepositoryImpl implements TournamentRepository {
 
   @override
   Future<Either<Failure, List<MatchEntity>>> getMatches(
-      String tournamentId) async {
+    String tournamentId,
+  ) async {
     try {
       final models = await _datasource.getMatches(tournamentId);
       return Right(models.map((m) => m.toEntity()).toList());
@@ -137,10 +143,10 @@ class TournamentRepositoryImpl implements TournamentRepository {
 
   @override
   Future<Either<Failure, List<MatchEntity>>> saveMatches(
-      List<MatchEntity> matches) async {
+    List<MatchEntity> matches,
+  ) async {
     try {
-      final models =
-          matches.map((e) => MatchModel.fromEntity(e)).toList();
+      final models = matches.map((e) => MatchModel.fromEntity(e)).toList();
       final saved = await _datasource.saveMatches(models);
       return Right(saved.map((m) => m.toEntity()).toList());
     } on Exception catch (e) {

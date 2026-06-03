@@ -1,9 +1,9 @@
 import 'package:dartz/dartz.dart';
-import 'package:efootball_fixture_generator/core/constants/app_constants.dart';
-import 'package:efootball_fixture_generator/core/errors/failures.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/data/datasources/quick_tap_remote_datasource.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/domain/entities/goal_event_entity.dart';
-import 'package:efootball_fixture_generator/features/quick_tap/domain/repositories/quick_tap_repository.dart';
+import 'package:eFootClash/core/constants/app_constants.dart';
+import 'package:eFootClash/core/errors/failures.dart';
+import 'package:eFootClash/features/quick_tap/data/datasources/quick_tap_remote_datasource.dart';
+import 'package:eFootClash/features/quick_tap/domain/entities/goal_event_entity.dart';
+import 'package:eFootClash/features/quick_tap/domain/repositories/quick_tap_repository.dart';
 
 class QuickTapRepositoryImpl implements QuickTapRepository {
   final QuickTapRemoteDatasource _datasource;

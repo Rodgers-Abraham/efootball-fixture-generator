@@ -1,34 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:efootball_fixture_generator/core/theme/app_colors.dart';
-import 'package:efootball_fixture_generator/features/auth/presentation/providers/auth_provider.dart';
-import 'package:efootball_fixture_generator/core/utils/supabase_client.dart';
-import 'package:efootball_fixture_generator/features/auth/data/models/user_model.dart';
-import 'package:efootball_fixture_generator/features/squad/domain/entities/squad_item_entity.dart';
-import 'package:efootball_fixture_generator/features/squad/data/models/squad_item_model.dart';
-import 'package:efootball_fixture_generator/features/squad/presentation/widgets/player_card_chip.dart';
+import 'package:eFootClash/core/theme/app_colors.dart';
+import 'package:eFootClash/features/auth/presentation/providers/auth_provider.dart';
+import 'package:eFootClash/core/utils/supabase_client.dart';
+import 'package:eFootClash/features/auth/data/models/user_model.dart';
+import 'package:eFootClash/features/squad/domain/entities/squad_item_entity.dart';
+import 'package:eFootClash/features/squad/data/models/squad_item_model.dart';
+import 'package:eFootClash/features/squad/presentation/widgets/player_card_chip.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// Fetches a specific user's public info.
-final publicUserProvider = FutureProvider.family<UserModel?, String>((ref, userId) async {
+final publicUserProvider = FutureProvider.family<UserModel?, String>((
+  ref,
+  userId,
+) async {
   final client = ref.watch(supabaseClientProvider);
-  final row = await client.from('users').select().eq('id', userId).maybeSingle();
+  final row = await client
+      .from('users')
+      .select()
+      .eq('id', userId)
+      .maybeSingle();
   if (row == null) return null;
   return UserModel.fromJson(row);
 });
 
 /// Fetches a specific user's squad.
-final publicSquadProvider = FutureProvider.family<List<SquadItemEntity>, String>((ref, userId) async {
-  final client = ref.watch(supabaseClientProvider);
-  final response = await client
-      .from('squad_items')
-      .select('*, player_cards(*)')
-      .eq('user_id', userId)
-      .order('slot_index');
-  
-  final list = response as List;
-  return list.map((json) => SquadItemModel.fromJson(json as Map<String, dynamic>).toEntity()).toList();
-});
+final publicSquadProvider =
+    FutureProvider.family<List<SquadItemEntity>, String>((ref, userId) async {
+      final client = ref.watch(supabaseClientProvider);
+      final response = await client
+          .from('squad_items')
+          .select('*, player_cards(*)')
+          .eq('user_id', userId)
+          .order('slot_index');
+
+      final list = response as List;
+      return list
+          .map(
+            (json) => SquadItemModel.fromJson(
+              json as Map<String, dynamic>,
+            ).toEntity(),
+          )
+          .toList();
+    });
 
 class PublicProfileScreen extends ConsumerWidget {
   final String userId;
@@ -45,9 +59,7 @@ class PublicProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('PLAYER PROFILE'),
-      ),
+      appBar: AppBar(title: const Text('PLAYER PROFILE')),
       body: userAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
@@ -103,7 +115,7 @@ class PublicProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    
+
                     // Social Action Button
                     if (!isOwnProfile && currentUser != null)
                       friendsAsync.when(
@@ -119,12 +131,20 @@ class PublicProfileScreen extends ConsumerWidget {
                             icon: const Icon(Icons.person_add),
                             label: const Text('SEND FRIEND REQUEST'),
                             onPressed: () async {
-                              final error = await ref.read(authNotifierProvider.notifier).sendFriendRequest(userId);
+                              final error = await ref
+                                  .read(authNotifierProvider.notifier)
+                                  .sendFriendRequest(userId);
                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text(error ?? 'Friend request sent!'),
-                                  backgroundColor: error != null ? AppColors.error : AppColors.success,
-                                ));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      error ?? 'Friend request sent!',
+                                    ),
+                                    backgroundColor: error != null
+                                        ? AppColors.error
+                                        : AppColors.success,
+                                  ),
+                                );
                               }
                             },
                           );
@@ -158,7 +178,11 @@ class PublicProfileScreen extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.emoji_events, color: AppColors.trophyGold, size: 28),
+                    const Icon(
+                      Icons.emoji_events,
+                      color: AppColors.trophyGold,
+                      size: 28,
+                    ),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,10 +196,21 @@ class PublicProfileScreen extends ConsumerWidget {
                               fontWeight: FontWeight.w900,
                             ),
                           ),
-                          loading: () => const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                          loading: () => const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
                           error: (_, _) => const Text('0'),
                         ),
-                        const Text('TOURNAMENT WINS', style: TextStyle(color: AppColors.textSecondary, fontSize: 10, fontWeight: FontWeight.w800)),
+                        const Text(
+                          'TOURNAMENT WINS',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -199,21 +234,30 @@ class PublicProfileScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Text('Error loading squad: $e'),
                 data: (squad) {
-                  final starters = squad.where((s) => s.slotIndex < 11).toList();
+                  final starters = squad
+                      .where((s) => s.slotIndex < 11)
+                      .toList();
                   if (starters.isEmpty) {
-                    return const Center(child: Text('No squad built yet', style: TextStyle(color: AppColors.textSecondary)));
+                    return const Center(
+                      child: Text(
+                        'No squad built yet',
+                        style: TextStyle(color: AppColors.textSecondary),
+                      ),
+                    );
                   }
                   return GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
-                      childAspectRatio: 0.72,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                          childAspectRatio: 0.72,
+                        ),
                     itemCount: starters.length,
-                    itemBuilder: (context, i) => PlayerCardChip(card: starters[i].card),
+                    itemBuilder: (context, i) =>
+                        PlayerCardChip(card: starters[i].card),
                   );
                 },
               ),
